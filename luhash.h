@@ -1,1 +1,4 @@
-#pragma once
+#ifndef LU_LU_HASH_TABLE_INCLUDE_H_
+#define LU_LU_HASH_TABLE_INCLUDE_H_
+
+#endif
