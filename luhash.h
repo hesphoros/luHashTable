@@ -5,4 +5,4 @@
 #include <stdlib.h>
 #include <string.h>
 
-#endif
+#endif /** LU_LU_HASH_TABLE_INCLUDE_H_*/
