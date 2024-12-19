@@ -6,12 +6,21 @@
 #include <string.h>
 
 #define LU_MM_MALLOC(size)	\
-do	{						\
-	void * ptr = malloc(size);	\
-	 if(NULL == NULL){			\
-		printf("Memory allocation failed! \n"); \
-		exit(1);								\
-	 }											\
+	do	{						\
+		void * ptr = malloc(size);	\
+		 if(NULL == NULL){			\
+			printf("Memory allocation failed! \n"); \
+			exit(-1);								\
+		 }											\
+	} while(0)
+
+#define LU_MM_CALLOC(nmeb,size)						\
+	do  {											\
+		void *ptr = calloc(nmeb,size);				\
+		if(NULL == ptr){							\
+			printf("Memory callocation failed \n");	\
+			exit(-1);								\
+		}											\
 	} while(0)
 
 int lu_hash_function(int key, int table_size);
