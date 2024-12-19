@@ -16,9 +16,9 @@
 		 }											\
 	} while(0)
 
-#define LU_MM_CALLOC(nmeb,size)						\
+#define LU_MM_CALLOC(nmemb,size)					\
 	do  {											\
-		void *ptr = calloc(nmeb,size);				\
+		void *ptr = calloc(nmemb,size);				\
 		if(NULL == ptr){							\
 			printf("Memory callocation failed \n");	\
 			exit(LU_ERROR_OUT_OF_MEMORY);			\
@@ -32,6 +32,10 @@
 			ptr = NULL;								\
 		}											\
 	}	while(0)
+
+#define MM_FREE(ptr)			LU_MM_FREE(ptr)
+#define MM_MALLOC(size)			LU_MM_MALLOC(size)
+#define MM_CALOC(nmemb,size)	LU_MM_CALLOC(nmemb,size)
 
 int lu_hash_function(int key, int table_size);
 
