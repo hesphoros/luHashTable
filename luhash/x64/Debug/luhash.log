@@ -1,0 +1,7 @@
+﻿  luhash.c
+  main.c
+F:\codespace\hash\luhash\luhash.c(18,25): warning C4305: “初始化”: 从“double”到“const float”截断
+  正在生成代码...
+  luhash.vcxproj -> F:\codespace\hash\luhash\x64\Debug\luhash.exe
+  'pwsh.exe' 不是内部或外部命令，也不是可运行的程序
+  或批处理文件。
