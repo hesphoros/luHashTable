@@ -39,4 +39,10 @@
 
 int lu_hash_function(int key, int table_size);
 
+/**Two type of the hash buket (list and red black tree*/
+typedef enum lu_hash_bucket_type_u {
+	LU_BUCKET_LIST,
+	LU_BUCKET_RBTREE,
+}lu_hash_bucket_type_t;
+
 #endif /** LU_LU_HASH_TABLE_INCLUDE_H_*/
