@@ -73,13 +73,16 @@ typedef struct lu_hash_bucket_node_s {
 } lu_hash_bucket_node_t;
 
 /**
-* The color of the rb_tree's node
-*/
+ * Enum representing the color of a red-black tree's node.
+ */
 typedef enum lu_node_color_u {
 	RED,
 	BLACK
 } lu_node_color_t, lu_rb_tree_color_t;
 
+/**
+ * Structure representing a node in a red-black tree.
+ */
 typedef struct lu_rb_tree_node_s {
 	struct lu_rb_tree_node_s* left;
 	struct lu_rb_tree_node_s* right;

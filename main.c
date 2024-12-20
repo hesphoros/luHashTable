@@ -1,6 +1,6 @@
 #include "luhash.h"
 
-int main()
+void test_hash_function()
 {
 	int keys[] = { 10, 20, 30, 40, 50 }; // 测试键值
 	int table_sizes[] = { 8, 16, 10, 32 }; // 测试哈希表大小（部分为2的幂）
@@ -18,6 +18,4 @@ int main()
 			printf("%d\t%d\t\t%d\n", keys[i], table_sizes[j], hash_value);
 		}
 	}
-
-	return 0;
 }
