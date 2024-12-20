@@ -125,10 +125,6 @@ typedef struct lu_hash_table_s {
 	int					element_count; // Current number of elements in the hash table
 }lu_hash_table_t;
 
-int lu_hash_function(int key, int table_size);
-
-lu_hash_table_t lu_hash_table_init(int table_size);
-
 static inline void* lu_mm_malloc(size_t size) {
 	void* ptr = malloc(size);
 	if (ptr == NULL) {
@@ -154,5 +150,9 @@ static inline void* lu_mm_calloc(size_t nmemb, size_t size) {
 	}
 	return ptr;
 }
+
+int lu_hash_function(int key, int table_size);
+
+lu_hash_table_t* lu_hash_table_init(int table_size);
 
 #endif /** LU_LU_HASH_TABLE_INCLUDE_H_*/

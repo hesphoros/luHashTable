@@ -34,5 +34,6 @@ lu_hash_table_t lu_hash_table_init(int table_size)
 {
 	if (table_size <= 0)
 		table_size = LU_HASH_TABLE_DEFAULT_SIZE;
-	lu_hash_table_t* table = (lu_hash_table_t*)LU_MM_MALLOC(sizeof(lu_hash_table_t));
+	lu_hash_table_t* table;
+	LU_MM_MALLOC(table, sizeof(lu_hash_table_t));
 }
