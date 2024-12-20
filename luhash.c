@@ -62,6 +62,9 @@ lu_hash_table_t* lu_hash_table_init(int table_size)
 	return table;
 }
 
+/**
+*
+*/
 void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
 {
 	int index = lu_hash_function(key, table->table_size);
@@ -85,9 +88,10 @@ void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
 			current = current->next;
 		}
 
-		//TODO: 如果允许覆盖，则需要在插入前检查并更新已有节点的值，而不是直接插入
 		new_node->value = value;
 		new_node->key = key;
 		new_node->next = bucket->data.list_head;
+		bucket->data.list_head = new_node;//update the head point
+		table->element_count++;
 	}
 }
