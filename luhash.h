@@ -68,9 +68,26 @@ typedef enum lu_hash_bucket_type_u {
  */
 typedef struct lu_hash_bucket_node_s {
 	struct lu_hash_bucket_node_s* next; // Pointer to the next node in the bucket
-	int key;                            // Key of the node (can be extended for other types)
+	int key;                            // Key of the node
 	void* value;                        // Pointer to the value associated with the key
 } lu_hash_bucket_node_t;
+
+/**
+* The color of the rb_tree's node
+*/
+typedef enum lu_node_color_u {
+	RED,
+	BLACK
+} lu_node_color_t, lu_rb_tree_color_t;
+
+typedef struct lu_rb_tree_node_s {
+	struct lu_rb_tree_node_s* left;
+	struct lu_rb_tree_node_s* right;
+	struct lu_rb_tree_node_s* parent;
+	lu_node_color_t			  color;
+	int						  key;
+	int						  value;
+}lu_rb_tree_node_t;
 
 typedef struct lu_rb_tree_s {
 	int a;
