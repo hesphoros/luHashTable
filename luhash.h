@@ -72,6 +72,9 @@ typedef struct lu_hash_bucket_node_s {
 	void* value;                        // Pointer to the value associated with the key
 } lu_hash_bucket_node_t;
 
+/*** Pointer to a hash bucket node.*/
+typedef lu_hash_bucket_node_t* lu_hash_bucket_node_ptr_t;
+
 /**
  * Enum representing the color of a red-black tree's node.
  */
@@ -89,10 +92,25 @@ typedef struct lu_rb_tree_node_s {
 	struct lu_rb_tree_node_s* parent;
 	lu_node_color_t			  color;
 	int						  key;
-	int						  value;
+	int						  value;//Value associated with the key
 }lu_rb_tree_node_t;
 
+/**
+ * Structure representing a red-black tree.
+ */
 typedef struct lu_rb_tree_s {
-	int a;
+	lu_rb_tree_node_t* root;// Pointer to the root node of the red-black tree
+	lu_rb_tree_node_t* nil;	// Sentinel node representing "null"
+	size_t             size;// Number of nodes in the tree
 }lu_rb_tree_t;
+
+typedef struct lu_hash_bucket_s {
+	lu_hash_bucket_type_t bucket_type; //The type of bucket (rb_tree or list)
+	union
+	{
+		lu_hash_bucket_node_ptr_t	list_head;
+		lu_rb_tree_t* rb_tree;
+	}data;
+}lu_hash_bucket_t;
+
 #endif /** LU_LU_HASH_TABLE_INCLUDE_H_*/
