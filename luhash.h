@@ -101,16 +101,25 @@ typedef struct lu_rb_tree_node_s {
 typedef struct lu_rb_tree_s {
 	lu_rb_tree_node_t* root;// Pointer to the root node of the red-black tree
 	lu_rb_tree_node_t* nil;	// Sentinel node representing "null"
-	size_t             size;// Number of nodes in the tree
+	size_t             size_tree;// Number of nodes in the tree
 }lu_rb_tree_t;
 
+/**
+ * Structure representing a hash bucket.
+ * A hash bucket can be implemented as either a linked list or a red-black tree,
+ * depending on the `bucket_type` field.
+ */
 typedef struct lu_hash_bucket_s {
-	lu_hash_bucket_type_t bucket_type; //The type of bucket (rb_tree or list)
+	lu_hash_bucket_type_t bucket_type; // The type of bucket (linked list or red-black tree)
+
+	// Union to store the bucket data, based on the bucket type
 	union
 	{
-		lu_hash_bucket_node_ptr_t	list_head;
-		lu_rb_tree_t* rb_tree;
+		lu_hash_bucket_node_ptr_t	list_head; // Pointer to the head of the linked list (if bucket_type is list)
+		lu_rb_tree_t* rb_tree;   // Pointer to the red-black tree (if bucket_type is rb_tree)
 	}data;
+
+	size_t size_bucket; // Number of elements in the bucket
 }lu_hash_bucket_t;
 
 #endif /** LU_LU_HASH_TABLE_INCLUDE_H_*/
