@@ -7,7 +7,21 @@
 
 static int lu_hash_erron_global_ = 0;
 
-#define LU_ERROR_OUT_OF_MEMORY 0x10B
+#define LU_ERROR_OUT_OF_MEMORY			0x10B
+#define LU_HASH_TABLE_DEFAULT_SIZE		16
+#define LU_HASH_TABLE_MAX_LOAD_FACTOR	0.75
+
+/**
+ * Threshold for converting a hash bucket from a linked list to a red-black tree.
+ * If the number of elements in a bucket exceeds this threshold, the bucket will
+ * be converted to a red-black tree to improve performance for operations such
+ * as search, insert, and delete.
+ *
+ * Recommended default value is 8, which balances memory usage and performance.
+ * A smaller value may trigger earlier tree conversion, increasing memory overhead,
+ * while a larger value may result in longer search times for highly populated buckets.
+ */
+#define LU_HASH_BUCKET_LIST_THRESHOLD 8
 
 #define LU_MM_MALLOC(size)									\
 	do	{													\
