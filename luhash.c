@@ -30,10 +30,20 @@ int lu_hash_function(int key, int table_size)
 	return hash % table_size;
 }
 
-lu_hash_table_t lu_hash_table_init(int table_size)
+lu_hash_table_t* lu_hash_table_init(int table_size)
 {
-	if (table_size <= 0)
+	if (table_size <= 0) {
 		table_size = LU_HASH_TABLE_DEFAULT_SIZE;
-	lu_hash_table_t* table;
-	LU_MM_MALLOC(table, sizeof(lu_hash_table_t));
+	}
+	lu_hash_table_t* table = (lu_hash_table_t*)LU_MM_MALLOC(sizeof(lu_hash_table_t));
+	table->element_count = 0;
+	table->buckets = (lu_hash_bucket_t*)LU_MM_CALLOC(table_size, sizeof(lu_hash_bucket_t));
+	table->table_size = table_size;
+
+	for (size_t i = 0; i < table_size; i++) {
+		table->buckets[i].bucket_type = LU_HASH_BUCKET_LIST;
+		table->buckets[i].data.list_head = NULL;
+	}
+
+	return table;
 }

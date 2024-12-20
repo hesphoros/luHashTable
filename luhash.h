@@ -22,34 +22,41 @@ static int lu_hash_erron_global_ = 0;
  * while a larger value may result in longer search times for highly populated buckets.
  */
 #define LU_HASH_BUCKET_LIST_THRESHOLD 8
+ //
+ //#define LU_MM_MALLOC(ptr, size)                            \
+ //    do {                                                   \
+ //        ptr = malloc(size);                                \
+ //        if (NULL == ptr) {                                 \
+ //            printf("Memory allocation failed! \n");        \
+ //            lu_hash_erron_global_ = LU_ERROR_OUT_OF_MEMORY;\
+ //            exit(LU_ERROR_OUT_OF_MEMORY);                 \
+ //        }                                                  \
+ //    } while (0)
+ //
+ //#define LU_MM_CALLOC(ptr, nmemb, size)                     \
+ //    do {                                                   \
+ //        ptr = calloc(nmemb, size);                         \
+ //        if (NULL == ptr) {                                 \
+ //            printf("Memory allocation failed! \n");        \
+ //            lu_hash_erron_global_ = LU_ERROR_OUT_OF_MEMORY;\
+ //            exit(LU_ERROR_OUT_OF_MEMORY);                 \
+ //        }                                                  \
+ //    } while (0)
+ //
+ //#define LU_MM_FREE(ptr)										\
+ //	do  {													\
+ //		if (ptr) {											\
+ //			free(ptr)										\
+ //			ptr = NULL;										\
+ //		}													\
+ //	}	while(0)
 
-#define LU_MM_MALLOC(ptr, size)                            \
-    do {                                                   \
-        ptr = malloc(size);                                \
-        if (NULL == ptr) {                                 \
-            printf("Memory allocation failed! \n");        \
-            lu_hash_erron_global_ = LU_ERROR_OUT_OF_MEMORY;\
-            exit(LU_ERROR_OUT_OF_MEMORY);                 \
-        }                                                  \
-    } while (0)
+#define LU_MM_MALLOC(size)			lu_mm_malloc(size)
+#define LU_MM_CALLOC(nmemb,size)	lu_mm_calloc(nmemb,size)
+#define LU_MM_FREE(ptr)				lu_mm_free(ptr)
 
-#define LU_MM_CALLOC(ptr, nmemb, size)                     \
-    do {                                                   \
-        ptr = calloc(nmemb, size);                         \
-        if (NULL == ptr) {                                 \
-            printf("Memory allocation failed! \n");        \
-            lu_hash_erron_global_ = LU_ERROR_OUT_OF_MEMORY;\
-            exit(LU_ERROR_OUT_OF_MEMORY);                 \
-        }                                                  \
-    } while (0)
-
-#define LU_MM_FREE(ptr)										\
-	do  {													\
-		if (ptr) {											\
-			free(ptr)										\
-			ptr = NULL;										\
-		}													\
-	}	while(0)
+//debug
+#define  LU_HASH_DEBUG
 
  /** Two types of hash buckets: linked list and red-black tree */
 typedef enum lu_hash_bucket_type_u {
@@ -120,15 +127,17 @@ typedef struct lu_hash_bucket_s {
 *  Structure representing a hash table
 */
 typedef struct lu_hash_table_s {
-	lu_hash_bucket_t* table;
-	int					table_size;
-	int					element_count; // Current number of elements in the hash table
+	lu_hash_bucket_t* buckets;
+	int				  table_size;
+	int				  element_count; // Current number of elements in the hash table
 }lu_hash_table_t;
 
 static inline void* lu_mm_malloc(size_t size) {
 	void* ptr = malloc(size);
 	if (ptr == NULL) {
+#ifdef LU_HASH_DEBUG
 		printf("Memory allocation failed!\n");
+#endif
 		lu_hash_erron_global_ = LU_ERROR_OUT_OF_MEMORY;
 		exit(LU_ERROR_OUT_OF_MEMORY);
 	}
@@ -145,7 +154,9 @@ static inline void lu_mm_free(void* ptr) {
 static inline void* lu_mm_calloc(size_t nmemb, size_t size) {
 	void* ptr = calloc(nmemb, size);
 	if (ptr == NULL) {
+#ifdef LU_HASH_DEBUG
 		printf("Memory allocation failed!\n");
+#endif
 		exit(1);
 	}
 	return ptr;
