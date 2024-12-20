@@ -29,3 +29,10 @@ int lu_hash_function(int key, int table_size)
 	// Fallback to standard modulo operation
 	return hash % table_size;
 }
+
+lu_hash_table_t lu_hash_table_init(int table_size)
+{
+	if (table_size <= 0)
+		table_size = LU_HASH_TABLE_DEFAULT_SIZE;
+	lu_hash_table_t* table = (lu_hash_table_t*)LU_MM_MALLOC(sizeof(lu_hash_table_t));
+}
