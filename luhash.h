@@ -7,9 +7,9 @@
 
 static int lu_hash_erron_global_ = 0;
 
-#define LU_ERROR_OUT_OF_MEMORY			0x10B
-#define LU_HASH_TABLE_DEFAULT_SIZE		16
-#define LU_HASH_TABLE_MAX_LOAD_FACTOR	0.75
+#define LU_ERROR_OUT_OF_MEMORY			0x10B	 // Error code for hash table memory allocation
+#define LU_HASH_TABLE_DEFAULT_SIZE		16		 // Default size for hash tables
+#define LU_HASH_TABLE_MAX_LOAD_FACTOR	0.75	 // Maximum allowed load factor
 
 /**
  * Threshold for converting a hash bucket from a linked list to a red-black tree.
@@ -63,4 +63,16 @@ typedef enum lu_hash_bucket_type_u {
 	LU_HASH_BUCKET_RBTREE,	// Bucket implemented as a red-black tree
 }lu_hash_bucket_type_t;
 
+/**
+ * Structure representing a node in a hash bucket
+ */
+typedef struct lu_hash_bucket_node_s {
+	struct lu_hash_bucket_node_s* next; // Pointer to the next node in the bucket
+	int key;                            // Key of the node (can be extended for other types)
+	void* value;                        // Pointer to the value associated with the key
+} lu_hash_bucket_node_t;
+
+typedef struct lu_rb_tree_s {
+	int a;
+}lu_rb_tree_t;
 #endif /** LU_LU_HASH_TABLE_INCLUDE_H_*/
