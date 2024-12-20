@@ -55,9 +55,7 @@ static int lu_hash_erron_global_ = 0;
 #define MM_MALLOC(size)			LU_MM_MALLOC(size)
 #define MM_CALOC(nmemb,size)	LU_MM_CALLOC(nmemb,size)
 
-int lu_hash_function(int key, int table_size);
-
-/** Two types of hash buckets: linked list and red-black tree */
+ /** Two types of hash buckets: linked list and red-black tree */
 typedef enum lu_hash_bucket_type_u {
 	LU_HASH_BUCKET_LIST,	// Bucket implemented as a linked list
 	LU_HASH_BUCKET_RBTREE,	// Bucket implemented as a red-black tree
@@ -121,5 +119,7 @@ typedef struct lu_hash_bucket_s {
 
 	size_t size_bucket; // Number of elements in the bucket
 }lu_hash_bucket_t;
+
+int lu_hash_function(int key, int table_size);
 
 #endif /** LU_LU_HASH_TABLE_INCLUDE_H_*/
