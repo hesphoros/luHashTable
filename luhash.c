@@ -135,6 +135,15 @@ void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
 		}
 	}
 	else if (LU_HASH_BUCKET_RBTREE == bucket->type) {
+		//Insert in rb_tree
+		if (NULL == bucket->data.rb_tree || NULL == bucket->data.rb_tree->nil) {
+#ifdef LU_HASH_DEBUG
+			printf("Inserting key %d into red-black tree \n", key);
+			printf("Error: RB-tree or tree->nil is not initialized\n");
+			lu_hash_erron_global_ = LU_ERROR_TREE_OR_NIL_NOT_INIT;
+			return;
+#endif // LU_HASH_DEBUG
+		}
 	}
 }
 

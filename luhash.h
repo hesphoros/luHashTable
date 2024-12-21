@@ -8,6 +8,7 @@
 static int lu_hash_erron_global_ = 0;
 
 #define LU_ERROR_OUT_OF_MEMORY			0x10B	 // Error code for hash table memory allocation
+#define LU_ERROR_TREE_OR_NIL_NOT_INIT   0x10C    // Error code for RB-tree or tree->nil isn't initialized
 #define LU_HASH_TABLE_DEFAULT_SIZE		16		 // Default size for hash tables
 #define LU_HASH_TABLE_MAX_LOAD_FACTOR	0.75	 // Maximum allowed load factor
 
