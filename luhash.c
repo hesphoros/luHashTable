@@ -2,6 +2,7 @@
 
 static int			  lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket);
 static lu_rb_tree_t* lu_rb_tree_init();
+static void			  lu_rb_tree_insert(lu_rb_tree_t* tree, int key, void* value);
 
 /**
  * @brief Computes a hash value for a given key using the multiplication method.
@@ -58,7 +59,7 @@ lu_hash_table_t* lu_hash_table_init(int table_size)
 	table->table_size = table_size;
 
 	for (size_t i = 0; i < table_size; i++) {
-		table->buckets[i].bucket_type = LU_HASH_BUCKET_LIST;
+		table->buckets[i].type = LU_HASH_BUCKET_LIST;
 		table->buckets[i].data.list_head = NULL;
 	}
 
@@ -85,7 +86,7 @@ void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
 {
 	int index = lu_hash_function(key, table->table_size);
 	lu_hash_bucket_t* bucket = &table->buckets[index];
-	if (LU_HASH_BUCKET_LIST == bucket->bucket_type) {
+	if (LU_HASH_BUCKET_LIST == bucket->type) {
 		lu_hash_bucket_node_ptr_t new_node = (lu_hash_bucket_node_ptr_t)LU_MM_MALLOC(sizeof(lu_hash_bucket_node_t));
 		if (!new_node) {
 #ifdef LU_HASH_DEBUG
@@ -118,6 +119,10 @@ void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
 
 		// Increment the total element count in the hash table
 		table->element_count++;
+
+		if (table->element_count > LU_HASH_BUCKET_LIST_THRESHOLD) {
+			lu_convert_bucket_to_rbtree(bucket);
+		}
 	}
 }
 
@@ -135,7 +140,7 @@ void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
 static int lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket)
 {
 	// Check if the bucket is valid and of the correct type
-	if (!bucket || bucket->bucket_type != LU_HASH_BUCKET_LIST) {
+	if (!bucket || bucket->type != LU_HASH_BUCKET_LIST) {
 #ifdef LU_HASH_DEBUG
 		printf("Error: Invalid bucket or bucket is not a linked list.\n");
 #endif //LU_HASH_DEBUG
@@ -144,6 +149,30 @@ static int lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket)
 
 	// Initialize the new red-black tree
 	lu_rb_tree_t* new_tree = lu_rb_tree_init();
+	if (!new_tree) {
+#ifdef LU_HASH_DEBUG
+		printf("Error: Memory allocation failed for red-black tree.\n");
+#endif //LU_HASH_DEBUG
+		return -1;
+	}
+	// Transfer elements from the linked list to the red-black tree
+	lu_hash_bucket_node_ptr_t node = bucket->data.list_head;
+
+	while (node)
+	{
+		lu_rb_tree_insert(new_tree, node->key, node->value);
+		lu_hash_bucket_node_ptr_t temp = node;
+		node = node->next;
+		free(temp); // Free the memory of the linked list node
+	}
+
+	// Update the bucket to use the red-black tree
+	bucket->data.list_head = NULL;     // Clear the linked list head
+	bucket->type = LU_HASH_BUCKET_RBTREE;   // Update the bucket type
+	bucket->data.rb_tree = new_tree;   // Point to the new red-black tree
+#ifdef LU_HASH_DEBUG
+	printf("Bucket(list chain) successfully converted to red-black tree.\n");
+#endif
 }
 
 /**

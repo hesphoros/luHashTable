@@ -111,7 +111,7 @@ typedef struct lu_rb_tree_s {
  * depending on the `bucket_type` field.
  */
 typedef struct lu_hash_bucket_s {
-	lu_hash_bucket_type_t bucket_type; // The type of bucket (linked list or red-black tree)
+	lu_hash_bucket_type_t type; // The type of bucket (linked list or red-black tree)
 
 	// Union to store the bucket data, based on the bucket type
 	union
