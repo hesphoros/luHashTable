@@ -5,7 +5,8 @@ static lu_rb_tree_t* lu_rb_tree_init();
 static void			  lu_rb_tree_insert(lu_rb_tree_t* tree, int key, void* value);
 
 static void lu_rb_tree_insert_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
-
+static void lu_rb_tree_right_rotate(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
+static void lu_rb_tree_left_rotate(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
 /**
  * @brief Computes a hash value for a given key using the multiplication method.
  *
@@ -405,4 +406,63 @@ void lu_rb_tree_insert_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 	}
 	// Ensure the root is always black, as required by red-black tree properties
 	tree->root->color = BLACK; // Ensure root is always black
+}
+
+/**
+ * @brief Performs a right rotation on the given node in the red-black tree.
+ *
+ * A right rotation is a tree balancing operation where the left child of a node
+ * becomes its parent, and the node becomes the right child of its previous left child.
+ * This operation maintains the binary search tree structure and is used in red-black
+ * tree balancing algorithms.
+ *
+ * Before Rotation:
+ *         node
+ *        /    \
+ *     left     c
+ *    /    \
+ *   a      b
+ *
+ * After Rotation:
+ *        left
+ *       /    \
+ *      a     node
+ *           /    \
+ *          b      c
+ *
+ * @param tree Pointer to the red-black tree structure.
+ * @param node Pointer to the node on which the right rotation is performed.
+ */
+void lu_rb_tree_right_rotate(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
+{
+	// Ensure the node has a left child to rotate with
+	if (node->left == tree->nil) {
+		return;   // Cannot perform right rotation if the left child is nil
+	}
+	// Step 1: Extract the left child of the node
+	lu_rb_tree_node_t* left = node->left;
+
+	// Step 2: Move the right subtree of the left child to the left subtree of the node
+	node->left = left->right;
+
+	if (left->right != tree->nil) {
+		left->right->parent = node;// Update parent of the moved subtree
+	}
+
+	// Step 3: Update the parent of the left child
+	left->parent = node->parent;
+
+	// Step 4: Update the parent's child pointer to point to the left child
+	if (node->parent == tree->nil) {
+		tree->root = left;// If the node is the root, update the root pointer
+	}
+	else if (node == node->parent->left) { // If the node is a left child, update parent's left pointer
+		node->parent->left = left;// If the node is a right child, update parent's right pointer
+	}
+	else {
+		node->parent->right = left;
+	}
+	// Step 5: Update pointers to complete the rotation
+	left->right = node;// Make the original node the right child of its left child
+	node->parent = left;// Update the parent of the original node
 }
