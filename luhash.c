@@ -146,3 +146,7 @@ int lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket)
 	// Initialize the new red-black tree
 	lu_rb_tree_t* new_tree = lu_rb_tree_init();
 }
+
+lu_rb_tree_t* lu_rb_tree_init()
+{
+}
