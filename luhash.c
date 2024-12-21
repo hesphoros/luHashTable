@@ -48,7 +48,7 @@ int lu_hash_function(int key, int table_size)
  * Usage example:
  *     lu_hash_table_t* hash_table = lu_hash_table_init(16); // Creates a hash table with 16 buckets.
  */
-lu_hash_table_t* lu_hash_table_init(int table_size)
+static lu_hash_table_t* lu_hash_table_init(int table_size)
 {
 	if (table_size <= 0) {
 		table_size = LU_HASH_TABLE_DEFAULT_SIZE;
@@ -248,4 +248,14 @@ static lu_rb_tree_t* lu_rb_tree_init()
 #endif // LU_HASH_DEBUG
 
 	return rb_tree;
+}
+
+static void lu_rb_tree_insert(lu_rb_tree_t* tree, int key, void* value)
+{
+	if (NULL == tree || NULL == tree->nil) {
+#ifdef LU_HASH_DEBUG
+
+#endif // LU_HASH_DEBUG
+	}
+	lu_rb_tree_node_t* new_node = (lu_rb_tree_node_t*)LU_MM_MALLOC(sizeof(lu_rb_tree_node_t));
 }
