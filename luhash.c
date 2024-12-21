@@ -329,3 +329,80 @@ static void lu_rb_tree_insert(lu_rb_tree_t* tree, int key, void* value)
 		lu_rb_tree_insert_fixup(tree, new_node);
 	}
 }
+
+/**
+ * @brief Fixes violations of red-black tree properties after an insertion.
+ *
+ * This function ensures that the red-black tree properties are restored after
+ * a node is inserted. It resolves cases where the tree may temporarily violate
+ * properties such as the double-red rule (a red node cannot have a red parent).
+ *
+ * @param tree Pointer to the red-black tree.
+ * @param node Pointer to the newly inserted node.
+ */
+void lu_rb_tree_insert_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
+{
+	// While the current node is not the root and its parent is red
+	while (node != tree->root && node->parent != tree->nil && node->parent->color == RED) {
+		// Ensure node->parent is not nil and has a parent
+		lu_rb_tree_node_t* parent = node->parent; // Parent of the current node
+		lu_rb_tree_node_t* grandparent = parent->parent; // Grandparent of the current node
+		if (grandparent == NULL) {
+			break;
+		}
+		// Case 1: Parent is the left child of the grandparent
+		if (parent == grandparent->left) {
+			// Uncle is the right child of the grandparent
+			lu_rb_tree_node_t* uncle = grandparent->right;
+
+			// Case 1.1: Uncle is RED
+			if (uncle != tree->nil && uncle != NULL && uncle->color == RED) {
+				// Case 1: Uncle is RED, recoloring required
+				parent->color = BLACK;
+				uncle->color = BLACK;
+				grandparent->color = RED;
+				node = grandparent; // Move up to the grandparent for further checks
+			}
+			else {
+				// Uncle is BLACK or NULL, perform rotations
+				if (node == parent->right) {
+					node = parent;// Move node up to parent
+					lu_rb_tree_left_rotate(tree, node); // Ensure node is valid
+				}
+				parent->color = BLACK;
+				grandparent->color = RED;
+				lu_rb_tree_right_rotate(tree, grandparent);
+			}
+		}
+		else {
+			// Case 2: Parent is the right child of the grandparent
+#ifdef LU_HASH_DEBUG
+			printf("Parent: %p, Grandparent: %p, Uncle: %p\n", parent, grandparent, grandparent->left);
+#endif // LU_HASH_DEBUG
+
+			// Symmetric case: node->parent is the right child of the grandparent
+			lu_rb_tree_node_t* uncle = grandparent->left; // Uncle is the left child of the grandparent
+
+			// Check if uncle is valid and not nil       // Case 2.1: Uncle is RED
+			if (uncle != tree->nil && uncle != NULL && uncle->color == RED) {
+				// Case 1: Uncle is RED, recoloring required
+				parent->color = BLACK;
+				uncle->color = BLACK;
+				grandparent->color = RED;
+				node = grandparent; // Move the node up
+			}
+			else {
+				// Uncle is BLACK or NULL, perform rotations
+				if (node == parent->left) {
+					node = parent;
+					lu_rb_tree_right_rotate(tree, node); // Ensure node is valid
+				}
+				parent->color = BLACK;
+				grandparent->color = RED;
+				lu_rb_tree_left_rotate(tree, grandparent); // Perform right rotation on parent
+			}
+		}
+	}
+	// Ensure the root is always black, as required by red-black tree properties
+	tree->root->color = BLACK; // Ensure root is always black
+}
