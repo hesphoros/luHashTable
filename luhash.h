@@ -102,7 +102,7 @@ typedef struct lu_rb_tree_node_s {
 typedef struct lu_rb_tree_s {
 	lu_rb_tree_node_t* root;// Pointer to the root node of the red-black tree
 	lu_rb_tree_node_t* nil;	// Sentinel node representing "null"
-	size_t             size_tree;// Number of nodes in the tree
+	//size_t             size_tree;// Number of nodes in the tree
 }lu_rb_tree_t;
 
 /**

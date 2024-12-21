@@ -1,8 +1,7 @@
 #include "luhash.h"
 
-int lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket);
-
-lu_rb_tree_t* lu_rb_tree_init();
+static int			  lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket);
+static lu_rb_tree_t* lu_rb_tree_init();
 
 /**
  * @brief Computes a hash value for a given key using the multiplication method.
@@ -133,7 +132,7 @@ void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
  * @param bucket Pointer to the hash bucket to be converted.
  * @return 0 on success, -1 on failure (e.g., memory allocation error).
  */
-int lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket)
+static int lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket)
 {
 	// Check if the bucket is valid and of the correct type
 	if (!bucket || bucket->bucket_type != LU_HASH_BUCKET_LIST) {
@@ -147,7 +146,14 @@ int lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket)
 	lu_rb_tree_t* new_tree = lu_rb_tree_init();
 }
 
-lu_rb_tree_t* lu_rb_tree_init()
+/**
+ * Initializes a red-black tree.
+ * Allocates memory for the tree and its sentinel node (`nil`), and sets
+ * up the tree structure with `nil` as its root and children.
+ *
+ * @return Pointer to the initialized red-black tree, or exits the program if memory allocation fails.
+ */
+static lu_rb_tree_t* lu_rb_tree_init()
 {
 	lu_rb_tree_t* rb_tree = (lu_rb_tree_t*)LU_MM_MALLOC(sizeof(lu_rb_tree_t));
 	if (NULL == rb_tree) {
@@ -157,4 +163,30 @@ lu_rb_tree_t* lu_rb_tree_init()
 		lu_hash_erron_global_ = LU_ERROR_OUT_OF_MEMORY;
 		exit(lu_hash_erron_global_);
 	}
+
+	// Allocate memory for the sentinel node (`nil`)
+	rb_tree->nil = (lu_rb_tree_node_t*)LU_MM_MALLOC(sizeof(lu_rb_tree_node_t));
+	if (NULL == rb_tree->nil) {
+#ifdef LU_HASH_DEBUG
+		printf("Error ops! rb_tree->nil is NULL in lu_rb_tree_init function\n");
+#endif // LU_HASH_DEBUG
+		free(rb_tree);
+		lu_hash_erron_global_ = LU_ERROR_OUT_OF_MEMORY;
+		exit(lu_hash_erron_global_);
+	}
+
+	/**Initialize the `nil` sentinel node*/
+	// Sentinel node is always black
+	rb_tree->nil->color = BLACK;
+	rb_tree->nil->left = rb_tree->nil;
+	rb_tree->nil->right = rb_tree->nil;
+	rb_tree->nil->parent = rb_tree->nil;
+	// Set the root to point to `nil`
+	rb_tree->root = rb_tree->nil;
+
+#ifdef LU_HASH_DEBUG
+	printf("Red-black tree initialized successfully. Root: %p, Nil: %p\n", rb_tree->root, rb_tree->nil);
+#endif // LU_HASH_DEBUG
+
+	return rb_tree;
 }
