@@ -63,8 +63,21 @@ lu_hash_table_t* lu_hash_table_init(int table_size)
 }
 
 /**
-*
-*/
+ * Inserts a key-value pair into the hash table.
+ *
+ * This function calculates the bucket index using the provided key and inserts
+ * the key-value pair into the corresponding bucket. If the bucket is implemented
+ * as a linked list, it checks for existing keys and updates their values if found;
+ * otherwise, it creates a new node and inserts it at the head of the list.
+ *
+ * @param table A pointer to the hash table.
+ * @param key   The key to be inserted or updated in the hash table.
+ * @param value A pointer to the value associated with the key.
+ *
+ * Usage:
+ *     lu_hash_table_insert(hash_table, 42, value_ptr);
+ */
+
 void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
 {
 	int index = lu_hash_function(key, table->table_size);
@@ -90,8 +103,15 @@ void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
 
 		new_node->value = value;
 		new_node->key = key;
+		new_node->key = key;
+
+		// Link the new node to the existing linked list
 		new_node->next = bucket->data.list_head;
-		bucket->data.list_head = new_node;//update the head point
+
+		// Update the head of the linked list to the new node
+		bucket->data.list_head = new_node;
+
+		// Increment the total element count in the hash table
 		table->element_count++;
 	}
 }
