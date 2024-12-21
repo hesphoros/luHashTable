@@ -19,3 +19,12 @@ void test_hash_function()
 		}
 	}
 }
+
+int main() {
+	lu_hash_table_t* tabel = lu_hash_table_init(16);
+	lu_hash_table_insert(tabel, 1, "Luciferau1");
+	lu_hash_table_insert(tabel, 2, "Luciferau2");
+	lu_hash_table_insert(tabel, 3, "Luciferau3");
+
+	return 0;
+}

@@ -51,7 +51,7 @@ int lu_hash_function(int key, int table_size)
  * Usage example:
  *     lu_hash_table_t* hash_table = lu_hash_table_init(16); // Creates a hash table with 16 buckets.
  */
-static lu_hash_table_t* lu_hash_table_init(int table_size)
+lu_hash_table_t* lu_hash_table_init(int table_size)
 {
 	if (table_size <= 0) {
 		table_size = LU_HASH_TABLE_DEFAULT_SIZE;
