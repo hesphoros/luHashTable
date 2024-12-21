@@ -4,6 +4,8 @@ static int			  lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket);
 static lu_rb_tree_t* lu_rb_tree_init();
 static void			  lu_rb_tree_insert(lu_rb_tree_t* tree, int key, void* value);
 
+static void lu_rb_tree_insert_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
+
 /**
  * @brief Computes a hash value for a given key using the multiplication method.
  *
@@ -142,9 +144,9 @@ void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
 #ifdef LU_HASH_DEBUG
 			printf("Inserting key %d into red-black tree \n", key);
 			printf("Error: RB-tree or tree->nil is not initialized\n");
+#endif // LU_HASH_DEBUG
 			lu_hash_erron_global_ = LU_ERROR_TREE_OR_NIL_NOT_INIT;
 			return;
-#endif // LU_HASH_DEBUG
 		}
 
 		lu_rb_tree_insert(bucket->data.rb_tree, key, value);
@@ -250,12 +252,80 @@ static lu_rb_tree_t* lu_rb_tree_init()
 	return rb_tree;
 }
 
+/**
+ * @brief Inserts a new node into the red-black tree with the specified key and value.
+ *
+ * This function inserts a new node into the red-black tree, maintaining the properties of the
+ * red-black tree. If the tree or its nil sentinel node is uninitialized, or if memory allocation
+ * for the new node fails, the function will exit early with an error message (if debugging is enabled).
+ *
+ * @param tree Pointer to the red-black tree.
+ * @param key The key for the new node.
+ * @param value The value associated with the key in the new node.
+ */
 static void lu_rb_tree_insert(lu_rb_tree_t* tree, int key, void* value)
 {
 	if (NULL == tree || NULL == tree->nil) {
 #ifdef LU_HASH_DEBUG
-
+		printf("Error: RB-tree or tree->nil is not initialized\n");
 #endif // LU_HASH_DEBUG
+		lu_hash_erron_global_ = LU_ERROR_TREE_OR_NIL_NOT_INIT;
+		return;
 	}
 	lu_rb_tree_node_t* new_node = (lu_rb_tree_node_t*)LU_MM_MALLOC(sizeof(lu_rb_tree_node_t));
+	if (NULL == new_node) {
+#ifdef LU_HASH_DEBUG
+		printf("Error: Memory allocation failed in not initialized!(lu_rb_tree_node_t)\n");
+#endif // LU_HASH_DEBUG
+		return;
+	}
+
+	// Initialize the new node with the given key and value.
+	new_node->key = key;
+	new_node->value = value;
+	new_node->color = RED; // New nodes are always inserted as RED.
+	new_node->left = tree->nil;// Left child is set to the nil sentinel
+	new_node->right = tree->nil;// Right child is set to the nil sentinel.
+	new_node->parent = tree->nil; // Parent is set to the nil sentinel.
+
+	if (tree->root == tree->nil) {
+		// Case 1:The tree is empty, so the new node becomes the root.
+		tree->root = new_node;
+		new_node->color = BLACK; // Root is always black.
+	}
+	else {
+		// Case 2: Find the correct position for the new node.
+		lu_rb_tree_node_t* parent = tree->root;// Pointer to track the parent of the new node.
+		lu_rb_tree_node_t* current = tree->root;// Pointer to traverse the tree.
+
+		// Traverse the tree to find the insertion point.
+		while (current != tree->nil) {
+			parent = current;
+			if (key < current->key) {
+				current = current->left;
+			}
+			else {
+				current = current->right;
+			}
+		}
+
+		// Set the parent of the new node and attach it as a child of the parent.
+		new_node->parent = parent;
+		if (key < parent->key) {
+			parent->left = new_node;
+		}
+		else {
+			parent->right = new_node;
+		}
+		// Sanity check: Ensure new node and tree are valid before fixing violations.
+		if (new_node == NULL || tree == NULL) {
+#ifdef LU_HASH_DEBUG
+			printf("Error: Invalid node or tree during fixup\n");
+#endif
+			return;
+		}
+
+		// Fix any violations of the red-black tree properties.
+		lu_rb_tree_insert_fixup(tree, new_node);
+	}
 }
