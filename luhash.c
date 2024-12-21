@@ -149,4 +149,12 @@ int lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket)
 
 lu_rb_tree_t* lu_rb_tree_init()
 {
+	lu_rb_tree_t* rb_tree = (lu_rb_tree_t*)LU_MM_MALLOC(sizeof(lu_rb_tree_t));
+	if (NULL == rb_tree) {
+#ifdef LU_HASH_DEBUG
+		printf("Error ops! rb_tree is NULL in lu_rb_tree_init function\n");
+#endif // LU_HASH_DEBUG
+		lu_hash_erron_global_ = LU_ERROR_OUT_OF_MEMORY;
+		exit(lu_hash_erron_global_);
+	}
 }
