@@ -119,10 +119,10 @@ void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
 
 		// Increment the global element count and local bucket size
 		table->element_count++;
-		bucket->size_bucket++;
+		bucket->esize_bucket++;
 
 		// Check if the bucket's linked list length exceeds the threshold
-		if (bucket->size_bucket > LU_HASH_BUCKET_LIST_THRESHOLD) {
+		if (bucket->esize_bucket > LU_HASH_BUCKET_LIST_THRESHOLD) {
 #ifdef LU_HASH_DEBUG
 			printf("Bucket size exceeded threshold. Converting to red-black tree...\n");
 #endif // LU_HASH_DEBUG
@@ -135,7 +135,9 @@ void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
 		}
 	}
 	else if (LU_HASH_BUCKET_RBTREE == bucket->type) {
-		//Insert in rb_tree
+		/**Insert into the red-black tree*/
+
+		//Check the rb_tree and nil
 		if (NULL == bucket->data.rb_tree || NULL == bucket->data.rb_tree->nil) {
 #ifdef LU_HASH_DEBUG
 			printf("Inserting key %d into red-black tree \n", key);
@@ -144,6 +146,9 @@ void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
 			return;
 #endif // LU_HASH_DEBUG
 		}
+
+		lu_rb_tree_insert(bucket->data.rb_tree, key, value);
+		table->element_count++;
 	}
 }
 
@@ -176,6 +181,9 @@ static int lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket)
 #endif //LU_HASH_DEBUG
 		return -1;
 	}
+
+	new_tree->esize_tree = bucket->esize_bucket;
+
 	// Transfer elements from the linked list to the red-black tree
 	lu_hash_bucket_node_ptr_t node = bucket->data.list_head;
 
