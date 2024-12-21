@@ -117,11 +117,20 @@ void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
 		// Update the head of the linked list to the new node
 		bucket->data.list_head = new_node;
 
-		// Increment the total element count in the hash table
+		// Increment the global element count and local bucket size
 		table->element_count++;
+		bucket->size_bucket++;
 
-		if (table->element_count > LU_HASH_BUCKET_LIST_THRESHOLD) {
-			lu_convert_bucket_to_rbtree(bucket);
+		if (bucket->size_bucket > LU_HASH_BUCKET_LIST_THRESHOLD) {
+#ifdef LU_HASH_DEBUG
+			printf("Bucket size exceeded threshold. Converting to red-black tree...\n");
+#endif // LU_HASH_DEBUG
+
+			if (lu_convert_bucket_to_rbtree(bucket) != 0) {
+#ifdef LU_HASH_DEBUG
+				printf("Error: Failed to convert bucket to red-black tree.\n");
+#endif // LU_HASH_DEBUG
+			}
 		}
 	}
 }
@@ -173,6 +182,7 @@ static int lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket)
 #ifdef LU_HASH_DEBUG
 	printf("Bucket(list chain) successfully converted to red-black tree.\n");
 #endif
+	return 0;
 }
 
 /**
