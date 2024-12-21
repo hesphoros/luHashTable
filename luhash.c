@@ -101,8 +101,10 @@ void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
 			current = current->next;
 		}
 
+		// Assign the value to the new node
 		new_node->value = value;
-		new_node->key = key;
+
+		// Assign the key to the new nod
 		new_node->key = key;
 
 		// Link the new node to the existing linked list
