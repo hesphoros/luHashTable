@@ -1,6 +1,19 @@
 #include "luhash.h"
 
 /**
+ * Converts a hash bucket's linked list to a red-black tree.
+ *
+ * This function takes a hash bucket that is implemented as a linked list,
+ * initializes a new red-black tree, and transfers all elements from the linked
+ * list to the red-black tree. It then updates the bucket to use the red-black tree
+ * as its data structure.
+ *
+ * @param bucket Pointer to the hash bucket to be converted.
+ * @return 0 on success, -1 on failure (e.g., memory allocation error).
+ */
+int lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket);
+
+/**
  * @brief Computes a hash value for a given key using the multiplication method.
  *
  * This function implements a hash function based on the multiplication method,
@@ -115,5 +128,16 @@ void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
 
 		// Increment the total element count in the hash table
 		table->element_count++;
+	}
+}
+
+int lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket)
+{
+	// Check if the bucket is valid and of the correct type
+	if (!bucket || bucket->bucket_type != LU_HASH_BUCKET_LIST) {
+#ifdef LU_HASH_DEBUG
+		printf("Error: Invalid bucket or bucket is not a linked list.\n");
+#endif //LU_HASH_DEBUG
+		return -1;
 	}
 }
