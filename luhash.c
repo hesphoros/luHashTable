@@ -4,8 +4,11 @@ static int			 lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket);
 static lu_rb_tree_t* lu_rb_tree_init();
 static void			 lu_rb_tree_insert(lu_rb_tree_t* tree, int key, void* value);
 
-static void* lu_hash_find_list(lu_hash_bucket_t* bucket, int* key);
-static void* lu_hash_find_rb_tree(lu_hash_bucket_t* bucket, int* key);
+static void* lu_hash_list_find(lu_hash_bucket_t* bucket, int* key);
+static void* lu_hash_rb_tree_find(lu_hash_bucket_t* bucket, int* key);
+
+static void lu_hash_list_delete(lu_hash_bucket_t* bucket, int* key);
+static void lu_hash_rb_tree_delete(lu_hash_bucket_t* bucket, int* key);
 
 static void lu_rb_tree_insert_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
 static void lu_rb_tree_right_rotate(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
@@ -165,11 +168,28 @@ void* lu_hash_table_find(lu_hash_table_t* table, int key)
 	int index = lu_hash_function(key, table->table_size);
 	lu_hash_bucket_t* bucket = &table->buckets[index];
 	if (bucket->type == LU_HASH_BUCKET_LIST) {
-		return lu_hash_find_list(bucket, &key);
+		return lu_hash_list_find(bucket, &key);
 	}
 	else if (bucket->type == LU_HASH_BUCKET_RBTREE) {
-		return lu_hash_find_rb_tree(bucket, &key);
+		return lu_hash_rb_tree_find(bucket, &key);
 	}
+	return NULL;
+}
+
+void lu_hash_table_delete(lu_hash_table_t* table, int key)
+{
+	int index = lu_hash_function(key, table->table_size);
+	lu_hash_bucket_t* bucket = &table->buckets[index];
+	if (LU_HASH_BUCKET_LIST == bucket->type) {
+		lu_hash_list_delete(bucket, &key);
+	}
+	else if (LU_HASH_BUCKET_RBTREE == bucket->type) {
+		lu_hash_rb_tree_delete(bucket, &key);
+	}
+	table->element_count--;
+#ifdef LU_HASH_DEBUG
+	printf("Delete %d in table", key);
+#endif // LU_HASH_DEBUG
 }
 
 /**
@@ -358,7 +378,7 @@ static void lu_rb_tree_insert(lu_rb_tree_t* tree, int key, void* value)
  * @param key A pointer to the key to search for in the linked list.
  * @return A pointer to the value associated with the key, or NULL if the key is not found.
  */
-static void* lu_hash_find_list(lu_hash_bucket_t* bucket, int* key)
+static void* lu_hash_list_find(lu_hash_bucket_t* bucket, int* key)
 {
 	//When data internal type == LU_HASH_BUCKET_LIST
 
@@ -391,7 +411,7 @@ static void* lu_hash_find_list(lu_hash_bucket_t* bucket, int* key)
  * @param key A pointer to the key being searched for in the red-black tree.
  * @return A pointer to the tree node if the key is found, or NULL if the key does not exist in the tree.
  */
-static void* lu_hash_find_rb_tree(lu_hash_bucket_t* bucket, int* key)
+static void* lu_hash_rb_tree_find(lu_hash_bucket_t* bucket, int* key)
 {
 	// Start from the root of the red-black tree
 	lu_rb_tree_node_t* current = bucket->data.rb_tree->root;
@@ -417,6 +437,16 @@ static void* lu_hash_find_rb_tree(lu_hash_bucket_t* bucket, int* key)
 
 	// If no matching key is found, return NULL
 	return NULL;
+}
+
+void lu_hash_list_delete(lu_hash_bucket_t* bucket, int* key)
+{
+	bucket->esize_bucket--;
+}
+
+void lu_hash_rb_tree_delete(lu_hash_bucket_t* bucket, int* key)
+{
+	bucket->esize_bucket--;
 }
 
 /**
