@@ -4,7 +4,7 @@ static int			 lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket);
 static lu_rb_tree_t* lu_rb_tree_init();
 static void			 lu_rb_tree_insert(lu_rb_tree_t* tree, int key, void* value);
 
-static void* lu_hash_find_list(lu_hash_bucket_t* bucket);
+static void* lu_hash_find_list(lu_hash_bucket_t* bucket, int* key);
 
 static void lu_rb_tree_insert_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
 static void lu_rb_tree_right_rotate(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
@@ -340,11 +340,13 @@ static void lu_rb_tree_insert(lu_rb_tree_t* tree, int key, void* value)
 	}
 }
 
-void* lu_hash_find_list(lu_hash_bucket_t* bucket)
+void* lu_hash_find_list(lu_hash_bucket_t* bucket, int* key)
 {
 	lu_hash_bucket_node_ptr_t node = bucket->data.list_head;
-	while (node != NULL)
+	while (node)
 	{
+		if (node->key == *key) {
+		}
 	}
 }
 
