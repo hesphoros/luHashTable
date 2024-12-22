@@ -1,8 +1,8 @@
 #include "luhash.h"
 
-static int			  lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket);
+static int			 lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket);
 static lu_rb_tree_t* lu_rb_tree_init();
-static void			  lu_rb_tree_insert(lu_rb_tree_t* tree, int key, void* value);
+static void			 lu_rb_tree_insert(lu_rb_tree_t* tree, int key, void* value);
 
 static void lu_rb_tree_insert_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
 static void lu_rb_tree_right_rotate(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
@@ -154,6 +154,11 @@ void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
 		bucket->esize_bucket++;
 		table->element_count++;
 	}
+}
+
+void* lu_hash_table_find(lu_hash_table_t* table, int key)
+{
+	int index = lu_hash_function(key, table->table_size);
 }
 
 /**
