@@ -157,7 +157,8 @@ static inline void* lu_mm_calloc(size_t nmemb, size_t size) {
 #ifdef LU_HASH_DEBUG
 		printf("Memory allocation failed!\n");
 #endif
-		exit(1);
+		lu_hash_erron_global_ = LU_ERROR_OUT_OF_MEMORY;
+		exit(LU_ERROR_OUT_OF_MEMORY);
 	}
 	return ptr;
 }
