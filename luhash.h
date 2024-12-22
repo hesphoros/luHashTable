@@ -163,6 +163,7 @@ static inline void* lu_mm_calloc(size_t nmemb, size_t size) {
 	return ptr;
 }
 
+/**Function definition*/
 int              lu_hash_function(int key, int table_size);
 lu_hash_table_t* lu_hash_table_init(int table_size);
 void			 lu_hash_table_insert(lu_hash_table_t* table, int key, void* value);
