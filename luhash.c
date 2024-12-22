@@ -370,6 +370,11 @@ static void* lu_hash_find_list(lu_hash_bucket_t* bucket, int* key)
 		}
 		node = node->next;
 	}
+
+#ifdef LU_HASH_DEBUG
+	printf("Not find the element in the list\n");
+#endif // LU_HASH_DEBUG
+
 	return NULL;
 }
 
@@ -406,6 +411,9 @@ static void* lu_hash_find_rb_tree(lu_hash_bucket_t* bucket, int* key)
 			current = current->right;
 		}
 	}
+#ifdef LU_HASH_DEBUG
+	printf("Not find the element in the rb_tree\n");
+#endif // LU_HASH_DEBUG
 
 	// If no matching key is found, return NULL
 	return NULL;
