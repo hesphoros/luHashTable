@@ -180,6 +180,7 @@ void lu_hash_table_delete(lu_hash_table_t* table, int key)
 {
 	int index = lu_hash_function(key, table->table_size);
 	lu_hash_bucket_t* bucket = &table->buckets[index];
+
 	if (LU_HASH_BUCKET_LIST == bucket->type) {
 		lu_hash_list_delete(bucket, &key);
 	}
@@ -231,7 +232,7 @@ static int lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket)
 		lu_rb_tree_insert(new_tree, node->key, node->value); // Insert key-value pair into the red-black tree
 		lu_hash_bucket_node_ptr_t temp = node; // Save current node pointer
 		node = node->next; // Move to the next node
-		free(temp); // Free the memory of the linked list node
+		LU_MM_FREE(temp); // Free the memory of the linked list node
 	}
 
 	// Update the bucket to use the red-black tree
@@ -268,7 +269,7 @@ static lu_rb_tree_t* lu_rb_tree_init()
 #ifdef LU_HASH_DEBUG
 		printf("Error ops! rb_tree->nil is NULL in lu_rb_tree_init function\n");
 #endif // LU_HASH_DEBUG
-		free(rb_tree);
+		LU_MM_FREE(rb_tree);
 		lu_hash_erron_global_ = LU_ERROR_OUT_OF_MEMORY;
 		exit(lu_hash_erron_global_);
 	}
@@ -441,11 +442,67 @@ static void* lu_hash_rb_tree_find(lu_hash_bucket_t* bucket, int* key)
 
 void lu_hash_list_delete(lu_hash_bucket_t* bucket, int* key)
 {
+	lu_hash_bucket_node_ptr_t prev = NULL;
+	lu_hash_bucket_node_ptr_t node = bucket->data.list_head;
+	while (node != NULL) {
+		if (node->key == (*key)) {
+			if (prev == NULL) {
+				bucket->data.list_head = node->next;
+			}
+			else {
+				prev->next = node->next;
+			}
+			LU_MM_FREE(node);
+			return;
+		}
+		prev = node;
+		node = node->next;
+	}
 	bucket->esize_bucket--;
 }
 
 void lu_hash_rb_tree_delete(lu_hash_bucket_t* bucket, int* key)
 {
+	lu_rb_tree_node_t* node = lu_rb_tree_find(bucket, key);
+	if (node == NULL) {
+		return;
+	}
+
+	lu_rb_tree_node_t* y = node;
+	lu_rb_tree_node_t* x;
+	lu_rb_tree_color_t original_color = y->color;
+
+	if (node->left == bucket->data.rb_tree->nil) {
+		x = node->right;
+		lu_rb_tree_transplant(bucket->data.rb_tree, node, node->right);
+	}
+	else if (node->right == bucket->data.rb_tree->nil) {
+		x = node->left;
+		lu_rb_tree_transplant(bucket->data.rb_tree, node, node->left);
+	}
+	else {
+		y = lu_rb_tree_minimum(bucket->data.rb_tree, node->right);
+		original_color = y->color;
+		x = y->right;
+		if (y->parent == node) {
+			x->parent = y;
+		}
+		else {
+			lu_rb_tree_transplant(bucket->data.rb_tree, y, y->right);
+			y->right = node->right;
+			y->right->parent = y;
+		}
+		lu_rb_tree_transplant(bucket->data.rb_tree, node, y);
+		y->left = node->left;
+		y->left->parent = y;
+		y->color = node->color;
+	}
+
+	if (original_color == BLACK) {
+		lu_rb_tree_delete_fixup(bucket->data.rb_tree, x);
+	}
+	LU_MM_FREE(node);
+
 	bucket->esize_bucket--;
 }
 
