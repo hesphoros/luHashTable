@@ -5,6 +5,7 @@ static lu_rb_tree_t* lu_rb_tree_init();
 static void			 lu_rb_tree_insert(lu_rb_tree_t* tree, int key, void* value);
 
 static void* lu_hash_find_list(lu_hash_bucket_t* bucket, int* key);
+static void* lu_hash_find_rb_tree(lu_hash_bucket_t* bucket, int* key);
 
 static void lu_rb_tree_insert_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
 static void lu_rb_tree_right_rotate(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
@@ -163,6 +164,12 @@ void* lu_hash_table_find(lu_hash_table_t* table, int key)
 {
 	int index = lu_hash_function(key, table->table_size);
 	lu_hash_bucket_t* bucket = &table->buckets[index];
+	if (bucket->type == LU_HASH_BUCKET_LIST) {
+		return lu_hash_find_list(bucket, &key);
+	}
+	else if (bucket->type == LU_HASH_BUCKET_RBTREE) {
+		return lu_hash_find_rb_tree(bucket, &key);
+	}
 }
 
 /**
@@ -340,14 +347,68 @@ static void lu_rb_tree_insert(lu_rb_tree_t* tree, int key, void* value)
 	}
 }
 
-void* lu_hash_find_list(lu_hash_bucket_t* bucket, int* key)
+/**
+ * @brief Searches for a value in a hash bucket's linked list using a given key.
+ *
+ * This function iterates through a hash bucket's linked list to find the node
+ * that matches the specified key. If the key is found, the corresponding value
+ * is returned; otherwise, the function returns NULL.
+ *
+ * @param bucket A pointer to the hash bucket containing the linked list.
+ * @param key A pointer to the key to search for in the linked list.
+ * @return A pointer to the value associated with the key, or NULL if the key is not found.
+ */
+static void* lu_hash_find_list(lu_hash_bucket_t* bucket, int* key)
 {
+	//When data internal type == LU_HASH_BUCKET_LIST
+
 	lu_hash_bucket_node_ptr_t node = bucket->data.list_head;
 	while (node)
 	{
 		if (node->key == *key) {
+			return node->value;
+		}
+		node = node->next;
+	}
+	return NULL;
+}
+
+/**
+ * @brief Searches for a key in a red-black tree within the given hash bucket.
+ *
+ * This function performs a search operation in a red-black tree structure,
+ * starting from the root node. It compares the given key with the keys in
+ * the tree nodes and traverses the tree accordingly (left or right) until the
+ * key is found or the search reaches a `nil` node. If the key is found, a
+ * pointer to the corresponding node is returned; otherwise, the function returns NULL.
+ *
+ * @param bucket A pointer to the hash bucket containing the red-black tree.
+ * @param key A pointer to the key being searched for in the red-black tree.
+ * @return A pointer to the tree node if the key is found, or NULL if the key does not exist in the tree.
+ */
+static void* lu_hash_find_rb_tree(lu_hash_bucket_t* bucket, int* key)
+{
+	// Start from the root of the red-black tree
+	lu_rb_tree_node_t* current = bucket->data.rb_tree->root;
+
+	// Traverse the tree until reaching the `nil` node (end of tree)
+	while (current != bucket->data.rb_tree->nil) {
+		// If the key matches the current node's key, return the node
+		if (*key == current->key) {
+			return current;
+		}
+		// If the key is smaller, move to the left child
+		else if (*key < current->key) {
+			current = current->left;
+		}
+		// If the key is larger, move to the right child
+		else {
+			current = current->right;
 		}
 	}
+
+	// If no matching key is found, return NULL
+	return NULL;
 }
 
 /**
