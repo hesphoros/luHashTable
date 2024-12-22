@@ -169,6 +169,6 @@ void			 lu_hash_table_insert(lu_hash_table_t* table, int key, void* value);
 int				 lu_hash_function(int key, int table_size);
 void* lu_hash_table_find(lu_hash_table_t* table, int key);
 void			 lu_hash_table_delete(lu_hash_table_t* table, int key);
-void* (*paser)();
+void			 lu_hash_table_destroy(lu_hash_table_t* table);
 
 #endif /** LU_LU_HASH_TABLE_INCLUDE_H_*/

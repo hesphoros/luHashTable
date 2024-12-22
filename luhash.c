@@ -19,6 +19,10 @@ static void lu_rb_tree_right_rotate_delete(lu_rb_tree_t* tree, lu_rb_tree_node_t
 static void lu_rb_tree_transplant(lu_rb_tree_t* tree, lu_rb_tree_node_t* u, lu_rb_tree_node_t* v);
 static void lu_rb_tree_delete_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
 static lu_rb_tree_node_t* lu_rb_tree_minimum(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
+static lu_rb_tree_node_t* lu_rb_tree_maximum(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
+
+static void lu_hash_list_destory(lu_hash_bucket_t* bucket);
+static void lu_hash_rb_tree_destory(lu_hash_bucket_t* bucket);
 
 /**
  * @brief Computes a hash value for a given key using the multiplication method.
@@ -197,6 +201,28 @@ void lu_hash_table_delete(lu_hash_table_t* table, int key)
 #ifdef LU_HASH_DEBUG
 	printf("Delete %d in table", key);
 #endif // LU_HASH_DEBUG
+}
+
+void lu_hash_table_destroy(lu_hash_table_t* table)
+{
+	if (table == NULL) {
+		return;
+	}
+	for (int i = 0; i < table->table_size; i++) {
+		lu_hash_bucket_t* bucket = &table->buckets[i];
+		if (bucket->type == LU_HASH_BUCKET_LIST) {
+			lu_hash_list_destory(bucket);
+		}
+		else if (bucket->type == LU_HASH_BUCKET_RBTREE) {
+			if (bucket->data.rb_tree != NULL) {
+				lu_hash_rb_tree_destory(bucket);
+			}
+		}
+	}
+	LU_MM_FREE(table->buckets);
+	//table->buckets = NULL;
+	LU_MM_FREE(table);
+	//table = NULL;
 }
 
 /**
@@ -446,7 +472,7 @@ static void* lu_hash_rb_tree_find(lu_hash_bucket_t* bucket, int* key)
 	return NULL;
 }
 
-void lu_hash_list_delete(lu_hash_bucket_t* bucket, int* key)
+static void lu_hash_list_delete(lu_hash_bucket_t* bucket, int* key)
 {
 	lu_hash_bucket_node_ptr_t prev = NULL;
 	lu_hash_bucket_node_ptr_t node = bucket->data.list_head;
@@ -467,7 +493,7 @@ void lu_hash_list_delete(lu_hash_bucket_t* bucket, int* key)
 	bucket->esize_bucket--;
 }
 
-void lu_hash_rb_tree_delete(lu_hash_bucket_t* bucket, int* key)
+static void lu_hash_rb_tree_delete(lu_hash_bucket_t* bucket, int* key)
 {
 	lu_rb_tree_node_t* node = lu_rb_tree_find(bucket, key);
 	if (node == NULL) {
@@ -522,7 +548,7 @@ void lu_hash_rb_tree_delete(lu_hash_bucket_t* bucket, int* key)
  * @param tree Pointer to the red-black tree.
  * @param node Pointer to the newly inserted node.
  */
-void lu_rb_tree_insert_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
+static void lu_rb_tree_insert_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 {
 	// While the current node is not the root and its parent is red
 	while (node != tree->root && node->parent != tree->nil && node->parent->color == RED) {
@@ -614,7 +640,7 @@ void lu_rb_tree_insert_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
  * @param tree Pointer to the red-black tree structure.
  * @param node Pointer to the node on which the right rotation is performed.
  */
-void lu_rb_tree_right_rotate(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
+static void lu_rb_tree_right_rotate(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 {
 	// Ensure the node has a left child to rotate with
 	if (node->left == tree->nil) {
@@ -673,7 +699,7 @@ void lu_rb_tree_right_rotate(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
  * @param tree Pointer to the red-black tree structure.
  * @param node Pointer to the node on which the left rotation is performed.
  */
-void lu_rb_tree_left_rotate(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
+static void lu_rb_tree_left_rotate(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 {
 	// Ensure the node has a right child to rotate with
 	if (node->right == tree->nil) {
@@ -708,7 +734,7 @@ void lu_rb_tree_left_rotate(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 	node->parent = right;      // Update the parent of the original node
 }
 
-void lu_rb_tree_left_rotate_delete(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
+static void lu_rb_tree_left_rotate_delete(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 {
 	lu_rb_tree_node_t* right = node->right;
 	node->right = right->left;
@@ -729,7 +755,7 @@ void lu_rb_tree_left_rotate_delete(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 	node->parent = right;
 }
 
-void lu_rb_tree_right_rotate_delete(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
+static void lu_rb_tree_right_rotate_delete(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 {
 	lu_rb_tree_node_t* left = node->left;
 	node->left = left->right;
@@ -828,10 +854,44 @@ static void lu_rb_tree_delete_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 	node->color = BLACK;
 }
 
-lu_rb_tree_node_t* lu_rb_tree_minimum(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
+static lu_rb_tree_node_t* lu_rb_tree_minimum(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 {
 	while (node->left != tree->nil) {
 		node = node->left;
 	}
 	return node;
+}
+
+static lu_rb_tree_node_t* lu_rb_tree_maximum(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
+{
+	while (node->right != tree->nil) {
+		node = node->right;
+	}
+	return node;
+}
+
+void lu_hash_list_destory(lu_hash_bucket_t* bucket)
+{
+	lu_hash_bucket_node_ptr_t node = bucket->data.list_head;
+	while (node != NULL) {
+		lu_hash_bucket_node_ptr_t temp = node;
+		node = node->next;
+		LU_MM_FREE(temp);
+	}
+	bucket->data.list_head = NULL;
+}
+
+void lu_hash_rb_tree_destory(lu_hash_bucket_t* bucket)
+{
+	if (bucket->data.rb_tree == NULL) {
+		return;
+	}
+
+	lu_rb_tree_destroy_node(bucket->data.rb_tree, bucket->data.rb_tree->root);
+
+	if (bucket->data.rb_tree->nil != NULL) {
+		LU_MM_FREE(bucket->data.rb_tree->nil);
+	}
+
+	LU_MM_FREE(bucket->data.rb_tree);
 }

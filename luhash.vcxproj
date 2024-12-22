@@ -133,6 +133,9 @@
     <ClCompile Include="luhash.c" />
     <ClCompile Include="main.c" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="push.bat" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
