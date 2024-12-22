@@ -14,6 +14,12 @@ static void lu_rb_tree_insert_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 static void lu_rb_tree_right_rotate(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
 static void lu_rb_tree_left_rotate(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
 
+static void lu_rb_tree_left_rotate_delete(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
+static void lu_rb_tree_right_rotate_delete(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
+static void lu_rb_tree_transplant(lu_rb_tree_t* tree, lu_rb_tree_node_t* u, lu_rb_tree_node_t* v);
+static void lu_rb_tree_delete_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
+static lu_rb_tree_node_t* lu_rb_tree_minimum(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
+
 /**
  * @brief Computes a hash value for a given key using the multiplication method.
  *
@@ -700,4 +706,132 @@ void lu_rb_tree_left_rotate(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 	// Step 5: Update pointers to complete the rotation
 	right->left = node;        // Make the original node the left child of its right child
 	node->parent = right;      // Update the parent of the original node
+}
+
+void lu_rb_tree_left_rotate_delete(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
+{
+	lu_rb_tree_node_t* right = node->right;
+	node->right = right->left;
+	if (right->left != tree->nil) {
+		right->left->parent = node;
+	}
+	right->parent = node->parent;
+	if (node->parent == tree->nil) {
+		tree->root = right;
+	}
+	else if (node == node->parent->left) {
+		node->parent->left = right;
+	}
+	else {
+		node->parent->right = right;
+	}
+	right->left = node;
+	node->parent = right;
+}
+
+void lu_rb_tree_right_rotate_delete(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
+{
+	lu_rb_tree_node_t* left = node->left;
+	node->left = left->right;
+	if (left->right != tree->nil) {
+		left->right->parent = node;
+	}
+	left->parent = node->parent;
+	if (node->parent == tree->nil) {
+		tree->root = left;
+	}
+	else if (node == node->parent->right) {
+		node->parent->right = left;
+	}
+	else {
+		node->parent->left = left;
+	}
+	left->right = node;
+	node->parent = left;
+}
+
+static void lu_rb_tree_transplant(lu_rb_tree_t* tree, lu_rb_tree_node_t* u, lu_rb_tree_node_t* v)
+{
+	if (u->parent == tree->nil) {
+		tree->root = v;
+	}
+	else if (u == u->parent->left) {
+		u->parent->left = v;
+	}
+	else {
+		u->parent->right = v;
+	}
+
+	if (v != tree->nil) {
+		v->parent = u->parent;
+	}
+}
+
+static void lu_rb_tree_delete_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
+{
+	while (node != tree->root && node->color == BLACK) {
+		if (node == node->parent->left) {
+			lu_rb_tree_node_t* sibling = node->parent->right;
+			if (sibling->color == RED) {
+				sibling->color = BLACK;
+				node->parent->color = RED;
+				lu_rb_tree_left_rotate_delete(tree, node->parent);
+				sibling = node->parent->right;
+			}
+
+			if (sibling->left->color == BLACK && sibling->right->color == BLACK) {
+				sibling->color = RED;
+				node = node->parent;
+			}
+			else {
+				if (sibling->right->color == BLACK) {
+					sibling->left->color = BLACK;
+					sibling->color = RED;
+					lu_rb_tree_right_rotate_delete(tree, sibling);
+					sibling = node->parent->right;
+				}
+				sibling->color = node->parent->color;
+				node->parent->color = BLACK;
+				sibling->right->color = BLACK;
+				lu_rb_tree_left_rotate_delete(tree, node->parent);
+				node = tree->root;
+			}
+		}
+		else {
+			lu_rb_tree_node_t* sibling = node->parent->left;
+			if (sibling->color == RED) {
+				sibling->color = BLACK;
+				node->parent->color = RED;
+				lu_rb_tree_right_rotate_delete(tree, node->parent);
+				sibling = node->parent->left;
+			}
+
+			if (sibling->right->color == BLACK && sibling->left->color == BLACK) {
+				sibling->color = RED;
+				node = node->parent;
+			}
+			else {
+				if (sibling->left->color == BLACK) {
+					sibling->right->color = BLACK;
+					sibling->color = RED;
+					lu_rb_tree_left_rotate_delete(tree, sibling);
+					sibling = node->parent->left;
+				}
+				sibling->color = node->parent->color;
+				node->parent->color = BLACK;
+				sibling->left->color = BLACK;
+				lu_rb_tree_right_rotate_delete(tree, node->parent);
+				node = tree->root;
+			}
+		}
+	}
+	node->color = BLACK;
+}
+
+lu_rb_tree_node_t* lu_rb_tree_minimum(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
+{
+	while (node->left != tree->nil) {
+		node = node->left;
+	}
+	return node;
 }
