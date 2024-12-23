@@ -101,7 +101,6 @@ lu_hash_table_t* lu_hash_table_init(int table_size)
  * Usage:
  *     lu_hash_table_insert(hash_table, 42, value_ptr);
  */
-
 void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
 {
 	int index = lu_hash_function(key, table->table_size);
@@ -199,7 +198,7 @@ void lu_hash_table_delete(lu_hash_table_t* table, int key)
 	}
 	table->element_count--;
 #ifdef LU_HASH_DEBUG
-	printf("Delete %d in table", key);
+	printf("Delete %d in bucket[%p]", key, &bucket);
 #endif // LU_HASH_DEBUG
 }
 
@@ -220,9 +219,8 @@ void lu_hash_table_destroy(lu_hash_table_t* table)
 		}
 	}
 	LU_MM_FREE(table->buckets);
-	//table->buckets = NULL;
+
 	LU_MM_FREE(table);
-	//table = NULL;
 }
 
 /**
