@@ -533,69 +533,112 @@ static void* lu_hash_rb_tree_find(lu_hash_bucket_t* bucket, int* key)
 	return NULL;
 }
 
+/**
+ * @brief Deletes a node with the specified key from a linked list in a hash bucket.
+ *
+ * This function searches for a node with the given key in the linked list within the specified hash bucket.
+ * If the node is found, it is removed from the linked list, its memory is deallocated, and the bucket's
+ * element count (`esize_bucket`) is decremented. If the key is not found, no action is taken.
+ *
+ * @param bucket A pointer to the hash bucket containing the linked list.
+ * @param key A pointer to the key of the node to delete from the linked list.
+ * @return void
+ */
 static void lu_hash_list_delete(lu_hash_bucket_t* bucket, int* key)
 {
+	// Pointers to track the current node and its previous node
 	lu_hash_bucket_node_ptr_t prev = NULL;
 	lu_hash_bucket_node_ptr_t node = bucket->data.list_head;
+
+	// Iterate through the linked list to find the node with the matching key
 	while (node != NULL) {
+		// If the key matches the current node's key
 		if (node->key == (*key)) {
+			// If the node to delete is the head of the list
 			if (prev == NULL) {
 				bucket->data.list_head = node->next;
 			}
 			else {
+				// Link the previous node to the next node, bypassing the current node
 				prev->next = node->next;
 			}
+			// Free the memory allocated for the node
 			LU_MM_FREE(node);
 			return;
 		}
+		// Move to the next node in the list, updating the previous node pointer
 		prev = node;
 		node = node->next;
 	}
+
+	// Decrement the bucket's element count after deletion
 	bucket->esize_bucket--;
 }
 
+/**
+ * @brief Deletes a node with the specified key from a red-black tree in a hash bucket.
+ *
+ * This function deletes a node with the given key from the red-black tree stored in a hash bucket.
+ * If the key is found, the node is removed from the tree while maintaining the red-black tree
+ * properties (balance and color rules). If the key does not exist in the tree, the function does nothing.
+ * The function also decrements the bucket's element count after a successful deletion.
+ *
+ * @param bucket A pointer to the hash bucket containing the red-black tree.
+ * @param key A pointer to the key of the node to be deleted from the red-black tree.
+ * @return void
+ */
 static void lu_hash_rb_tree_delete(lu_hash_bucket_t* bucket, int* key)
 {
+	// Find the node with the given key in the red-black tree
 	lu_rb_tree_node_t* node = lu_rb_tree_find(bucket, key);
 	if (node == NULL) {
-		return;
+		return; // Key not found, no action needed
 	}
 
+	// Temporary variables for node manipulation
 	lu_rb_tree_node_t* y = node;
 	lu_rb_tree_node_t* x;
 	lu_rb_tree_color_t original_color = y->color;
 
+	// Case 1: Node has no left child
 	if (node->left == bucket->data.rb_tree->nil) {
 		x = node->right;
 		lu_rb_tree_transplant(bucket->data.rb_tree, node, node->right);
 	}
+	// Case 2: Node has no right child
 	else if (node->right == bucket->data.rb_tree->nil) {
 		x = node->left;
 		lu_rb_tree_transplant(bucket->data.rb_tree, node, node->left);
 	}
+	// Case 3: Node has two children
 	else {
-		y = lu_rb_tree_minimum(bucket->data.rb_tree, node->right);
+		y = lu_rb_tree_minimum(bucket->data.rb_tree, node->right); // Find the successor
 		original_color = y->color;
 		x = y->right;
-		if (y->parent == node) {
-			x->parent = y;
-		}
-		else {
+
+		// If successor is not the direct child of the node
+		if (y->parent != node) {
 			lu_rb_tree_transplant(bucket->data.rb_tree, y, y->right);
 			y->right = node->right;
 			y->right->parent = y;
 		}
+
+		// Replace the node with its successor
 		lu_rb_tree_transplant(bucket->data.rb_tree, node, y);
 		y->left = node->left;
 		y->left->parent = y;
 		y->color = node->color;
 	}
 
+	// Fix red-black tree properties if a black node was removed
 	if (original_color == BLACK) {
 		lu_rb_tree_delete_fixup(bucket->data.rb_tree, x);
 	}
+
+	// Free the memory allocated for the deleted node
 	LU_MM_FREE(node);
 
+	// Decrement the bucket's element count
 	bucket->esize_bucket--;
 }
 
