@@ -245,24 +245,44 @@ void lu_hash_table_delete(lu_hash_table_t* table, int key)
 #endif // LU_HASH_DEBUG
 }
 
+/**
+ * @brief Destroys a hash table and frees all allocated memory.
+ *
+ * This function deallocates all resources associated with the given hash table, including its buckets
+ * and their underlying data structures. Depending on the type of each bucket (linked list or red-black tree),
+ * the corresponding destruction function is called. Finally, the memory allocated for the buckets and
+ * the hash table itself is freed.
+ *
+ * @param table A pointer to the hash table to be destroyed. If the pointer is NULL, the function does nothing.
+ * @return void
+ */
 void lu_hash_table_destroy(lu_hash_table_t* table)
 {
+	// Check if the table is NULL to avoid unnecessary operations
 	if (table == NULL) {
 		return;
 	}
+
+	// Iterate through each bucket in the hash table
 	for (int i = 0; i < table->table_size; i++) {
 		lu_hash_bucket_t* bucket = &table->buckets[i];
+
+		// Destroy the bucket if it uses a linked list for storage
 		if (bucket->type == LU_HASH_BUCKET_LIST) {
 			lu_hash_list_destory(bucket);
 		}
+		// Destroy the bucket if it uses a red-black tree for storage
 		else if (bucket->type == LU_HASH_BUCKET_RBTREE) {
 			if (bucket->data.rb_tree != NULL) {
 				lu_hash_rb_tree_destory(bucket);
 			}
 		}
 	}
+
+	// Free the memory allocated for the buckets array
 	LU_MM_FREE(table->buckets);
 
+	// Free the memory allocated for the hash table structure itself
 	LU_MM_FREE(table);
 }
 
