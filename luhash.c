@@ -957,11 +957,28 @@ static void lu_rb_tree_transplant(lu_rb_tree_t* tree, lu_rb_tree_node_t* u, lu_r
 	}
 }
 
+/**
+ * @brief Restores the red-black tree properties after a node deletion.
+ *
+ * This function fixes violations of red-black tree properties that may occur
+ * during the deletion of a node. It ensures that the tree remains balanced and
+ * adheres to the red-black tree properties (e.g., every path from a node to its
+ * descendant leaves has the same number of black nodes). It uses rotations and
+ * color adjustments to restore these properties.
+ *
+ * @param tree A pointer to the red-black tree where the fixup is applied.
+ * @param node A pointer to the node that may cause violations after deletion.
+ * @return void
+ */
 static void lu_rb_tree_delete_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 {
+	// Continue until the node is the root or is no longer violating the black-depth property
 	while (node != tree->root && node->color == BLACK) {
+		// If the node is the left child of its parent
 		if (node == node->parent->left) {
 			lu_rb_tree_node_t* sibling = node->parent->right;
+
+			// Case 1: Sibling is red
 			if (sibling->color == RED) {
 				sibling->color = BLACK;
 				node->parent->color = RED;
@@ -969,10 +986,12 @@ static void lu_rb_tree_delete_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 				sibling = node->parent->right;
 			}
 
+			// Case 2: Sibling and its children are black
 			if (sibling->left->color == BLACK && sibling->right->color == BLACK) {
 				sibling->color = RED;
 				node = node->parent;
 			}
+			// Case 3: Sibling's left child is red, right child is black
 			else {
 				if (sibling->right->color == BLACK) {
 					sibling->left->color = BLACK;
@@ -980,6 +999,7 @@ static void lu_rb_tree_delete_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 					lu_rb_tree_right_rotate_delete(tree, sibling);
 					sibling = node->parent->right;
 				}
+				// Case 4: Sibling's right child is red
 				sibling->color = node->parent->color;
 				node->parent->color = BLACK;
 				sibling->right->color = BLACK;
@@ -987,8 +1007,11 @@ static void lu_rb_tree_delete_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 				node = tree->root;
 			}
 		}
+		// Symmetric case: node is the right child of its parent
 		else {
 			lu_rb_tree_node_t* sibling = node->parent->left;
+
+			// Case 1: Sibling is red
 			if (sibling->color == RED) {
 				sibling->color = BLACK;
 				node->parent->color = RED;
@@ -996,10 +1019,12 @@ static void lu_rb_tree_delete_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 				sibling = node->parent->left;
 			}
 
+			// Case 2: Sibling and its children are black
 			if (sibling->right->color == BLACK && sibling->left->color == BLACK) {
 				sibling->color = RED;
 				node = node->parent;
 			}
+			// Case 3: Sibling's right child is red, left child is black
 			else {
 				if (sibling->left->color == BLACK) {
 					sibling->right->color = BLACK;
@@ -1007,6 +1032,7 @@ static void lu_rb_tree_delete_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 					lu_rb_tree_left_rotate_delete(tree, sibling);
 					sibling = node->parent->left;
 				}
+				// Case 4: Sibling's left child is red
 				sibling->color = node->parent->color;
 				node->parent->color = BLACK;
 				sibling->left->color = BLACK;
@@ -1015,6 +1041,8 @@ static void lu_rb_tree_delete_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 			}
 		}
 	}
+
+	// Ensure the final node is black
 	node->color = BLACK;
 }
 
