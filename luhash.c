@@ -924,18 +924,34 @@ static void lu_rb_tree_right_rotate_delete(lu_rb_tree_t* tree, lu_rb_tree_node_t
 	node->parent = left;
 }
 
+/**
+ * @brief Replaces one subtree with another in a red-black tree.
+ *
+ * This function replaces the subtree rooted at node `u` with the subtree rooted at node `v` in the
+ * red-black tree. It updates the parent pointers and adjusts the tree structure accordingly. This
+ * operation is typically used during deletion operations in the red-black tree.
+ *
+ * @param tree A pointer to the red-black tree.
+ * @param u A pointer to the node being replaced.
+ * @param v A pointer to the node replacing `u`.
+ * @return void
+ */
 static void lu_rb_tree_transplant(lu_rb_tree_t* tree, lu_rb_tree_node_t* u, lu_rb_tree_node_t* v)
 {
+	// If `u` is the root of the tree, update the root to point to `v`
 	if (u->parent == tree->nil) {
 		tree->root = v;
 	}
+	// If `u` is the left child of its parent, update the parent's left child to `v`
 	else if (u == u->parent->left) {
 		u->parent->left = v;
 	}
+	// Otherwise, update the parent's right child to `v`
 	else {
 		u->parent->right = v;
 	}
 
+	// If `v` is not a sentinel (nil) node, update its parent to `u`'s parent
 	if (v != tree->nil) {
 		v->parent = u->parent;
 	}
