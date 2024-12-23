@@ -1046,44 +1046,101 @@ static void lu_rb_tree_delete_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 	node->color = BLACK;
 }
 
+/**
+ * @brief Finds the node with the minimum key in a red-black tree.
+ *
+ * This function traverses the leftmost path of the red-black tree starting from the
+ * given node and returns the node with the minimum key. The minimum key node is
+ * always located at the leftmost leaf of the subtree.
+ *
+ * @param tree A pointer to the red-black tree.
+ * @param node A pointer to the node from which to start the search for the minimum.
+ * @return A pointer to the node with the minimum key.
+ */
 static lu_rb_tree_node_t* lu_rb_tree_minimum(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 {
+	// Traverse the leftmost path of the tree to find the minimum key node
 	while (node->left != tree->nil) {
 		node = node->left;
 	}
+
+	// Return the node with the minimum key
 	return node;
 }
 
+/**
+ * @brief Finds the node with the maximum key in a red-black tree.
+ *
+ * This function traverses the rightmost path of the red-black tree starting from the
+ * given node and returns the node with the maximum key. The maximum key node is
+ * always located at the rightmost leaf of the subtree.
+ *
+ * @param tree A pointer to the red-black tree.
+ * @param node A pointer to the node from which to start the search for the maximum.
+ * @return A pointer to the node with the maximum key.
+ */
 static lu_rb_tree_node_t* lu_rb_tree_maximum(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 {
+	// Traverse the rightmost path of the tree to find the maximum key node
 	while (node->right != tree->nil) {
 		node = node->right;
 	}
+
+	// Return the node with the maximum key
 	return node;
 }
 
+/**
+ * @brief Destroys a linked list stored in a hash bucket and frees all its memory.
+ *
+ * This function traverses a linked list stored in the given hash bucket, deallocates
+ * the memory for each node, and sets the list head to `NULL` after the destruction
+ * process is complete.
+ *
+ * @param bucket A pointer to the hash bucket containing the linked list to be destroyed.
+ * @return void
+ */
 void lu_hash_list_destory(lu_hash_bucket_t* bucket)
 {
+	// Get the head of the linked list
 	lu_hash_bucket_node_ptr_t node = bucket->data.list_head;
+
+	// Traverse the list and free each node
 	while (node != NULL) {
-		lu_hash_bucket_node_ptr_t temp = node;
-		node = node->next;
-		LU_MM_FREE(temp);
+		lu_hash_bucket_node_ptr_t temp = node; // Store the current node
+		node = node->next;                    // Move to the next node
+		LU_MM_FREE(temp);                     // Free the current node
 	}
+
+	// Set the list head to NULL to indicate the list is empty
 	bucket->data.list_head = NULL;
 }
 
+/**
+ * @brief Destroys a red-black tree stored in a hash bucket and frees all its memory.
+ *
+ * This function deallocates all memory associated with a red-black tree stored in the given
+ * hash bucket. It first recursively frees all nodes in the tree, then deallocates the sentinel
+ * `nil` node, and finally frees the tree structure itself.
+ *
+ * @param bucket A pointer to the hash bucket containing the red-black tree to be destroyed.
+ * @return void
+ */
 void lu_hash_rb_tree_destory(lu_hash_bucket_t* bucket)
 {
+	// If the red-black tree is NULL, nothing to destroy
 	if (bucket->data.rb_tree == NULL) {
 		return;
 	}
 
+	// Recursively destroy all nodes in the red-black tree starting from the root
 	lu_rb_tree_destroy_node(bucket->data.rb_tree, bucket->data.rb_tree->root);
 
+	// Free the sentinel nil node if it is not NULL
 	if (bucket->data.rb_tree->nil != NULL) {
 		LU_MM_FREE(bucket->data.rb_tree->nil);
 	}
 
+	// Free the memory allocated for the red-black tree structure
 	LU_MM_FREE(bucket->data.rb_tree);
 }
