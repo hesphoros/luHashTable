@@ -838,44 +838,88 @@ static void lu_rb_tree_left_rotate(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 	node->parent = right;      // Update the parent of the original node
 }
 
+/**
+ * @brief Performs a left rotation on a node in a red-black tree during a delete operation.
+ *
+ * This function performs a left rotation around the specified node in the red-black tree.
+ * A left rotation moves the node's right child into its position and adjusts the relationships
+ * between the parent, left, and right child nodes. The red-black tree's structure and properties
+ * are preserved during this operation.
+ *
+ * @param tree A pointer to the red-black tree where the rotation will occur.
+ * @param node A pointer to the node to be rotated to the left.
+ * @return void
+ */
 static void lu_rb_tree_left_rotate_delete(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 {
+	// Get the right child of the node
 	lu_rb_tree_node_t* right = node->right;
+
+	// Move the left child of the right node to the right of the current node
 	node->right = right->left;
 	if (right->left != tree->nil) {
-		right->left->parent = node;
+		right->left->parent = node; // Update the parent of the left child
 	}
+
+	// Update the parent of the right node
 	right->parent = node->parent;
+
+	// If the current node is the root, update the root pointer
 	if (node->parent == tree->nil) {
 		tree->root = right;
 	}
+	// Otherwise, update the parent's left or right child to point to the right node
 	else if (node == node->parent->left) {
 		node->parent->left = right;
 	}
 	else {
 		node->parent->right = right;
 	}
+
+	// Complete the rotation by making the current node the left child of the right node
 	right->left = node;
 	node->parent = right;
 }
 
+/**
+ * @brief Performs a right rotation on a node in a red-black tree during a delete operation.
+ *
+ * This function performs a right rotation around the specified node in the red-black tree.
+ * A right rotation moves the node's left child into its position and adjusts the relationships
+ * between the parent, left, and right child nodes. The red-black tree's structure and properties
+ * are preserved during this operation.
+ *
+ * @param tree A pointer to the red-black tree where the rotation will occur.
+ * @param node A pointer to the node to be rotated to the right.
+ * @return void
+ */
 static void lu_rb_tree_right_rotate_delete(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 {
+	// Get the left child of the node
 	lu_rb_tree_node_t* left = node->left;
+
+	// Move the right child of the left node to the left of the current node
 	node->left = left->right;
 	if (left->right != tree->nil) {
-		left->right->parent = node;
+		left->right->parent = node; // Update the parent of the right child
 	}
+
+	// Update the parent of the left node
 	left->parent = node->parent;
+
+	// If the current node is the root, update the root pointer
 	if (node->parent == tree->nil) {
 		tree->root = left;
 	}
+	// Otherwise, update the parent's right or left child to point to the left node
 	else if (node == node->parent->right) {
 		node->parent->right = left;
 	}
 	else {
 		node->parent->left = left;
 	}
+
+	// Complete the rotation by making the current node the right child of the left node
 	left->right = node;
 	node->parent = left;
 }
