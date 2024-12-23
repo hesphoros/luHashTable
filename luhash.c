@@ -172,32 +172,75 @@ void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
 	}
 }
 
+/**
+ * @brief Searches for a key in a hash table and returns the corresponding value or node.
+ *
+ * This function finds the appropriate bucket in the hash table by using the hash function
+ * on the given key. It then determines the type of the bucket (linked list or red-black tree)
+ * and delegates the search to the corresponding bucket-specific find function. If the key
+ * is found, the associated value or node is returned; otherwise, the function returns NULL.
+ *
+ * @param table A pointer to the hash table where the key will be searched.
+ * @param key The key to search for in the hash table.
+ * @return A pointer to the value or node associated with the key if found, or NULL if the key does not exist.
+ */
 void* lu_hash_table_find(lu_hash_table_t* table, int key)
 {
+	// Calculate the index of the bucket in the hash table using the hash function
 	int index = lu_hash_function(key, table->table_size);
+
+	// Retrieve the hash bucket at the calculated index
 	lu_hash_bucket_t* bucket = &table->buckets[index];
+
+	// Check the bucket type and call the corresponding find function
 	if (bucket->type == LU_HASH_BUCKET_LIST) {
+		// Use linked list search if the bucket stores data as a list
 		return lu_hash_list_find(bucket, &key);
 	}
 	else if (bucket->type == LU_HASH_BUCKET_RBTREE) {
+		// Use red-black tree search if the bucket stores data as a tree
 		return lu_hash_rb_tree_find(bucket, &key);
 	}
+
+	// Return NULL if no matching key is found
 	return NULL;
 }
 
+/**
+ * @brief Deletes a key from the hash table.
+ *
+ * This function locates the appropriate bucket in the hash table using the hash function,
+ * identifies the type of the bucket (linked list or red-black tree), and delegates the
+ * deletion operation to the corresponding bucket-specific delete function. After the deletion,
+ * the element count in the hash table is decremented.
+ *
+ * @param table A pointer to the hash table from which the key will be deleted.
+ * @param key The key to delete from the hash table.
+ * @return void
+ */
 void lu_hash_table_delete(lu_hash_table_t* table, int key)
 {
+	// Calculate the index of the bucket in the hash table using the hash function
 	int index = lu_hash_function(key, table->table_size);
+
+	// Retrieve the hash bucket at the calculated index
 	lu_hash_bucket_t* bucket = &table->buckets[index];
 
+	// Check the bucket type and call the corresponding delete function
 	if (LU_HASH_BUCKET_LIST == bucket->type) {
+		// Delete the key from the linked list bucket
 		lu_hash_list_delete(bucket, &key);
 	}
 	else if (LU_HASH_BUCKET_RBTREE == bucket->type) {
+		// Delete the key from the red-black tree bucket
 		lu_hash_rb_tree_delete(bucket, &key);
 	}
+
+	// Decrement the total element count in the hash table
 	table->element_count--;
+
 #ifdef LU_HASH_DEBUG
+	// Debug output to confirm deletion
 	printf("Delete %d in bucket[%p]", key, &bucket);
 #endif // LU_HASH_DEBUG
 }
@@ -270,7 +313,7 @@ static int lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket)
 	bucket->type = LU_HASH_BUCKET_RBTREE;	// Update the bucket type
 	bucket->data.rb_tree = new_tree;		// Point to the new red-black tree
 #ifdef LU_HASH_DEBUG
-	printf("Bucket(list chain) successfully converted to red-black tree.\n");
+	printf("Bucket[%p] successfully converted to red-black tree.\n", &bucket);
 #endif
 	return 0; // Indicate successful conversion
 }
