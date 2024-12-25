@@ -21,6 +21,7 @@ static void lu_rb_tree_delete_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 static lu_rb_tree_node_t* lu_rb_tree_minimum(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
 static lu_rb_tree_node_t* lu_rb_tree_maximum(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
 
+static void lu_rb_tree_destroy_node(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
 static void lu_hash_list_destory(lu_hash_bucket_t* bucket);
 static void lu_hash_rb_tree_destory(lu_hash_bucket_t* bucket);
 
@@ -1090,6 +1091,18 @@ static lu_rb_tree_node_t* lu_rb_tree_maximum(lu_rb_tree_t* tree, lu_rb_tree_node
 	return node;
 }
 
+static void lu_rb_tree_destroy_node(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
+{
+	if (node == tree->nil) {
+		return;
+	}
+
+	lu_rb_tree_destroy_node(tree, node->left);
+	lu_rb_tree_destroy_node(tree, node->right);
+
+	LU_MM_FREE(node);
+}
+
 /**
  * @brief Destroys a linked list stored in a hash bucket and frees all its memory.
  *
@@ -1100,7 +1113,7 @@ static lu_rb_tree_node_t* lu_rb_tree_maximum(lu_rb_tree_t* tree, lu_rb_tree_node
  * @param bucket A pointer to the hash bucket containing the linked list to be destroyed.
  * @return void
  */
-void lu_hash_list_destory(lu_hash_bucket_t* bucket)
+static void lu_hash_list_destory(lu_hash_bucket_t* bucket)
 {
 	// Get the head of the linked list
 	lu_hash_bucket_node_ptr_t node = bucket->data.list_head;
