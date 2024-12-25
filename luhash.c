@@ -1,13 +1,13 @@
-﻿#include "luhash.h"
+#include "luhash.h"
 
 static int			 lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket);
 static lu_rb_tree_t* lu_rb_tree_init();
 static void			 lu_rb_tree_insert(lu_rb_tree_t* tree, int key, void* value);
-static void lu_hash_rb_tree_delete(lu_hash_bucket_t* bucket, int* key);
+static void lu_hash_rb_tree_delete(lu_hash_bucket_t* bucket, int key);
 
-static void lu_hash_list_delete(lu_hash_bucket_t* bucket, int* key);
-static void* lu_hash_list_find(lu_hash_bucket_t* bucket, int* key);
-static void* lu_hash_rb_tree_find(lu_hash_bucket_t* bucket, int* key);
+static void lu_hash_list_delete(lu_hash_bucket_t* bucket, int key);
+static void* lu_hash_list_find(lu_hash_bucket_t* bucket, int key);
+static void* lu_hash_rb_tree_find(lu_rb_tree_t* tree, int key);
 
 static void lu_rb_tree_insert_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
 static void lu_rb_tree_right_rotate(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
@@ -81,6 +81,7 @@ lu_hash_table_t* lu_hash_table_init(int table_size)
 	for (size_t i = 0; i < table_size; i++) {
 		table->buckets[i].type = LU_HASH_BUCKET_LIST;
 		table->buckets[i].data.list_head = NULL;
+		table->buckets[i].esize_bucket = 0;
 	}
 
 	return table;
@@ -143,7 +144,7 @@ void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
 		// Check if the bucket's linked list length exceeds the threshold
 		if (bucket->esize_bucket > LU_HASH_BUCKET_LIST_THRESHOLD) {
 #ifdef LU_HASH_DEBUG
-			printf("Bucket size exceeded threshold. Converting to red-black tree...\n");
+			//printf("Bucket size exceeded threshold. Converting to red-black tree...\n");
 #endif // LU_HASH_DEBUG
 			//Convert the internal structure of bucket from list to rb_tree
 			if (lu_convert_bucket_to_rbtree(bucket) != 0) {
@@ -195,12 +196,16 @@ void* lu_hash_table_find(lu_hash_table_t* table, int key)
 	// Check the bucket type and call the corresponding find function
 	if (bucket->type == LU_HASH_BUCKET_LIST) {
 		// Use linked list search if the bucket stores data as a list
-		return lu_hash_list_find(bucket, &key);
+		return lu_hash_list_find(bucket, key);
 	}
 	else if (bucket->type == LU_HASH_BUCKET_RBTREE) {
 		// Use red-black tree search if the bucket stores data as a tree
-		return lu_hash_rb_tree_find(bucket, &key);
+		lu_rb_tree_node_t* rb_node = lu_hash_rb_tree_find(bucket->data.rb_tree, key);
+		if (rb_node != NULL) {
+			return rb_node->value;
+		}
 	}
+	printf("Key not found in hash table\n");
 
 	// Return NULL if no matching key is found
 	return NULL;
@@ -229,11 +234,11 @@ void lu_hash_table_delete(lu_hash_table_t* table, int key)
 	// Check the bucket type and call the corresponding delete function
 	if (LU_HASH_BUCKET_LIST == bucket->type) {
 		// Delete the key from the linked list bucket
-		lu_hash_list_delete(bucket, &key);
+		lu_hash_list_delete(bucket, key);
 	}
 	else if (LU_HASH_BUCKET_RBTREE == bucket->type) {
 		// Delete the key from the red-black tree bucket
-		lu_hash_rb_tree_delete(bucket, &key);
+		lu_hash_rb_tree_delete(bucket, key);
 	}
 
 	// Decrement the total element count in the hash table
@@ -333,7 +338,7 @@ static int lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket)
 	bucket->type = LU_HASH_BUCKET_RBTREE;	// Update the bucket type
 	bucket->data.rb_tree = new_tree;		// Point to the new red-black tree
 #ifdef LU_HASH_DEBUG
-	printf("Bucket[%p] successfully converted to red-black tree.\n", &bucket);
+	//printf("Bucket[%p] successfully converted to red-black tree.\n", &bucket);
 #endif
 	return 0; // Indicate successful conversion
 }
@@ -377,7 +382,7 @@ static lu_rb_tree_t* lu_rb_tree_init()
 	rb_tree->root = rb_tree->nil;
 
 #ifdef LU_HASH_DEBUG
-	printf("Red-black tree initialized successfully. Root: %p, Nil: %p\n", rb_tree->root, rb_tree->nil);
+	//printf("Red-black tree initialized successfully. Root: %p, Nil: %p\n", rb_tree->root, rb_tree->nil);
 #endif // LU_HASH_DEBUG
 
 	return rb_tree;
@@ -414,10 +419,8 @@ static void lu_rb_tree_insert(lu_rb_tree_t* tree, int key, void* value)
 	// Initialize the new node with the given key and value.
 	new_node->key = key;
 	new_node->value = value;
-	new_node->color = RED; // New nodes are always inserted as RED.
-	new_node->left = tree->nil;// Left child is set to the nil sentinel
-	new_node->right = tree->nil;// Right child is set to the nil sentinel.
-	new_node->parent = tree->nil; // Parent is set to the nil sentinel.
+	new_node->color = RED;
+	new_node->left = new_node->right = new_node->parent = tree->nil;
 
 	if (tree->root == tree->nil) {
 		// Case 1:The tree is empty, so the new node becomes the root.
@@ -472,14 +475,14 @@ static void lu_rb_tree_insert(lu_rb_tree_t* tree, int key, void* value)
  * @param key A pointer to the key to search for in the linked list.
  * @return A pointer to the value associated with the key, or NULL if the key is not found.
  */
-static void* lu_hash_list_find(lu_hash_bucket_t* bucket, int* key)
+static void* lu_hash_list_find(lu_hash_bucket_t* bucket, int key)
 {
 	//When data internal type == LU_HASH_BUCKET_LIST
 
 	lu_hash_bucket_node_ptr_t node = bucket->data.list_head;
-	while (node)
+	while (node != NULL)
 	{
-		if (node->key == *key) {
+		if (node->key == key) {
 			return node->value;
 		}
 		node = node->next;
@@ -505,31 +508,21 @@ static void* lu_hash_list_find(lu_hash_bucket_t* bucket, int* key)
  * @param key A pointer to the key being searched for in the red-black tree.
  * @return A pointer to the tree node if the key is found, or NULL if the key does not exist in the tree.
  */
-static void* lu_hash_rb_tree_find(lu_hash_bucket_t* bucket, int* key)
+static void* lu_hash_rb_tree_find(lu_rb_tree_t* tree, int key)
 {
-	// Start from the root of the red-black tree
-	lu_rb_tree_node_t* current = bucket->data.rb_tree->root;
-
-	// Traverse the tree until reaching the `nil` node (end of tree)
-	while (current != bucket->data.rb_tree->nil) {
-		// If the key matches the current node's key, return the node
-		if (*key == current->key) {
+	lu_rb_tree_node_t* current = tree->root;
+	while (current != tree->nil) {
+		if (key == current->key) {
 			return current;
 		}
-		// If the key is smaller, move to the left child
-		else if (*key < current->key) {
+		else if (key < current->key) {
 			current = current->left;
 		}
-		// If the key is larger, move to the right child
 		else {
 			current = current->right;
 		}
 	}
-#ifdef LU_HASH_DEBUG
-	printf("Not find the element in the rb_tree\n");
-#endif // LU_HASH_DEBUG
-
-	// If no matching key is found, return NULL
+	printf("Not find the element in the rb-tree\n");
 	return NULL;
 }
 
@@ -544,7 +537,7 @@ static void* lu_hash_rb_tree_find(lu_hash_bucket_t* bucket, int* key)
  * @param key A pointer to the key of the node to delete from the linked list.
  * @return void
  */
-static void lu_hash_list_delete(lu_hash_bucket_t* bucket, int* key)
+static void lu_hash_list_delete(lu_hash_bucket_t* bucket, int key)
 {
 	// Pointers to track the current node and its previous node
 	lu_hash_bucket_node_ptr_t prev = NULL;
@@ -553,7 +546,7 @@ static void lu_hash_list_delete(lu_hash_bucket_t* bucket, int* key)
 	// Iterate through the linked list to find the node with the matching key
 	while (node != NULL) {
 		// If the key matches the current node's key
-		if (node->key == (*key)) {
+		if (node->key == (key)) {
 			// If the node to delete is the head of the list
 			if (prev == NULL) {
 				bucket->data.list_head = node->next;
@@ -587,7 +580,7 @@ static void lu_hash_list_delete(lu_hash_bucket_t* bucket, int* key)
  * @param key A pointer to the key of the node to be deleted from the red-black tree.
  * @return void
  */
-static void lu_hash_rb_tree_delete(lu_hash_bucket_t* bucket, int* key)
+static void lu_hash_rb_tree_delete(lu_hash_bucket_t* bucket, int key)
 {
 	// Find the node with the given key in the red-black tree
 	lu_rb_tree_node_t* node = lu_hash_rb_tree_find(bucket, key);
@@ -659,9 +652,7 @@ static void lu_rb_tree_insert_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 		// Ensure node->parent is not nil and has a parent
 		lu_rb_tree_node_t* parent = node->parent; // Parent of the current node
 		lu_rb_tree_node_t* grandparent = parent->parent; // Grandparent of the current node
-		if (grandparent == NULL) {
-			break;
-		}
+
 		// Case 1: Parent is the left child of the grandparent
 		if (parent == grandparent->left) {
 			// Uncle is the right child of the grandparent
