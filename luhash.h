@@ -1,6 +1,31 @@
 #ifndef LU_LU_HASH_TABLE_INCLUDE_H_
 #define LU_LU_HASH_TABLE_INCLUDE_H_
 
+/**
+ * @file lu_hash.h
+ * @brief Header file for hash table implementation using linked lists and red-black trees.
+ *
+ * This file defines the data structures, enums, and function prototypes necessary for implementing a
+ * hash table with two types of hash buckets: linked lists and red-black trees. It also includes memory
+ * management macros and error handling mechanisms for memory allocation issues.
+ *
+ * @author [hesphoros]
+ * @contact [hesphoros@gmail.com]
+ * @date 2024-12-25
+ *
+ * This file includes the following major components:
+ * - Error codes for hash table operations, including memory allocation failures.
+ * - Memory management macros for allocating and freeing memory.
+ * - Data structures representing hash buckets, red-black trees, and hash table itself.
+ * - Function prototypes for initializing, inserting, finding, deleting, and destroying hash tables.
+ *
+ * @version 1.0
+ *
+ * @note The hash table supports dynamic resizing based on load factor and can use either linked
+ * lists or red-black trees for its buckets. The conversion threshold between these two types is
+ * configurable.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

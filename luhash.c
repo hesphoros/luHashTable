@@ -1,5 +1,19 @@
 #include "luhash.h"
 
+/**
+ * @file lu_hash.c
+ * @brief Function prototypes for hash table operations including linked list and red-black tree management.
+ *
+ * This file contains function prototypes for operations on hash tables with linked list and red-black tree
+ * buckets. It includes functions for insertion, deletion, search, tree balancing (rotation, fixup), and cleanup.
+ * These operations ensure efficient handling of hash table buckets, whether using a linked list or a red-black tree.
+ *
+ * @author [hesphoros]
+ * @contact [hesphoros@gmail.com]
+ * @date 2024-12-25
+ * @version 1.0
+ */
+
 static int			 lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket);
 static lu_rb_tree_t* lu_rb_tree_init();
 static void			 lu_rb_tree_insert(lu_rb_tree_t* tree, int key, void* value);
