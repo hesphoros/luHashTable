@@ -1,14 +1,13 @@
-#include "luhash.h"
+﻿#include "luhash.h"
 
 static int			 lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket);
 static lu_rb_tree_t* lu_rb_tree_init();
 static void			 lu_rb_tree_insert(lu_rb_tree_t* tree, int key, void* value);
-
-static void* lu_hash_list_find(lu_hash_bucket_t* bucket, int* key);
-static void* lu_hash_rb_tree_find(lu_hash_bucket_t* bucket, int* key);
+static void lu_hash_rb_tree_delete(lu_hash_bucket_t* bucket, int* key);
 
 static void lu_hash_list_delete(lu_hash_bucket_t* bucket, int* key);
-static void lu_hash_rb_tree_delete(lu_hash_bucket_t* bucket, int* key);
+static void* lu_hash_list_find(lu_hash_bucket_t* bucket, int* key);
+static void* lu_hash_rb_tree_find(lu_hash_bucket_t* bucket, int* key);
 
 static void lu_rb_tree_insert_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
 static void lu_rb_tree_right_rotate(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
@@ -591,7 +590,7 @@ static void lu_hash_list_delete(lu_hash_bucket_t* bucket, int* key)
 static void lu_hash_rb_tree_delete(lu_hash_bucket_t* bucket, int* key)
 {
 	// Find the node with the given key in the red-black tree
-	lu_rb_tree_node_t* node = lu_rb_tree_find(bucket, key);
+	lu_rb_tree_node_t* node = lu_hash_rb_tree_find(bucket, key);
 	if (node == NULL) {
 		return; // Key not found, no action needed
 	}
@@ -689,9 +688,8 @@ static void lu_rb_tree_insert_fixup(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 		}
 		else {
 			// Case 2: Parent is the right child of the grandparent
-#ifdef LU_HASH_DEBUG
-			printf("Parent: %p, Grandparent: %p, Uncle: %p\n", parent, grandparent, grandparent->left);
-#endif // LU_HASH_DEBUG
+
+			//printf("Parent: %p, Grandparent: %p, Uncle: %p\n", parent, grandparent, grandparent->left);
 
 			// Symmetric case: node->parent is the right child of the grandparent
 			lu_rb_tree_node_t* uncle = grandparent->left; // Uncle is the left child of the grandparent
