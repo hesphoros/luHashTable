@@ -1,6 +1,12 @@
 ﻿  luhash.c
-F:\codespace\hash\luhash\luhash.c(25,46): warning C4305: “初始化”: 从“double”到“const float”截断
-F:\codespace\hash\luhash\luhash.c(286,18): warning C4047: “=”:“int”与“void *”的间接级别不同
-  luhash.vcxproj -> F:\codespace\hash\luhash\x64\Debug\luhash.exe
-  'pwsh.exe' 不是内部或外部命令，也不是可运行的程序
-  或批处理文件。
+  main.c
+F:\codespace\hash\luhash\luhash.c(42,46): warning C4305: “初始化”: 从“double”到“const float”截断
+F:\codespace\hash\luhash\luhash.c(416,18): warning C4047: “=”:“int”与“void *”的间接级别不同
+F:\codespace\hash\luhash\luhash.c(593,28): warning C4013: “lu_rb_tree_find”未定义；假设外部返回 int
+F:\codespace\hash\luhash\luhash.c(593,21): warning C4047: “初始化”:“lu_rb_tree_node_t *”与“int”的间接级别不同
+F:\codespace\hash\luhash\luhash.c(1137,2): warning C4013: “lu_rb_tree_destroy_node”未定义；假设外部返回 int
+F:\codespace\hash\luhash\main.c(23,15): warning C4244: “=”: 从“int”转换到“float”，可能丢失数据
+  正在生成代码...
+luhash.obj : error LNK2019: 无法解析的外部符号 lu_rb_tree_find，函数 lu_hash_rb_tree_delete 中引用了该符号
+luhash.obj : error LNK2019: 无法解析的外部符号 lu_rb_tree_destroy_node，函数 lu_hash_rb_tree_destory 中引用了该符号
+F:\codespace\hash\luhash\x64\Debug\luhash.exe : fatal error LNK1120: 2 个无法解析的外部命令

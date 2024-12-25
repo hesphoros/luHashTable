@@ -1126,7 +1126,7 @@ void lu_hash_list_destory(lu_hash_bucket_t* bucket)
  * @param bucket A pointer to the hash bucket containing the red-black tree to be destroyed.
  * @return void
  */
-void lu_hash_rb_tree_destory(lu_hash_bucket_t* bucket)
+static void lu_hash_rb_tree_destory(lu_hash_bucket_t* bucket)
 {
 	// If the red-black tree is NULL, nothing to destroy
 	if (bucket->data.rb_tree == NULL) {
