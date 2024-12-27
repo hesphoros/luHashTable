@@ -42,24 +42,24 @@ extern "C" {
 #define LU_HASH_TABLE_MAX_LOAD_FACTOR	0.75	 // Maximum allowed load factor
 
 	/**
-	 * Threshold for converting a hash bucket from a linked list to a red-black tree.
-	 * If the number of elements in a bucket exceeds this threshold, the bucket will
-	 * be converted to a red-black tree to improve performance for operations such
-	 * as search, insert, and delete.
-	 *
-	 * Recommended default value is 8, which balances memory usage and performance.
-	 * A smaller value may trigger earlier tree conversion, increasing memory overhead,
-	 * while a larger value may result in longer search times for highly populated buckets.
-	 */
+	* Threshold for converting a hash bucket from a linked list to a red-black tree.
+	* If the number of elements in a bucket exceeds this threshold, the bucket will
+	* be converted to a red-black tree to improve performance for operations such
+	* as search, insert, and delete.
+	*
+	* Recommended default value is 8, which balances memory usage and performance.
+	* A smaller value may trigger earlier tree conversion, increasing memory overhead,
+	* while a larger value may result in longer search times for highly populated buckets.
+	*/
 #define LU_HASH_BUCKET_LIST_THRESHOLD 8
 
 #define LU_MM_MALLOC(size)			lu_mm_malloc(size)
 #define LU_MM_CALLOC(nmemb,size)	lu_mm_calloc(nmemb,size)
 #define LU_MM_FREE(ptr)				lu_mm_free(ptr)
 
-#define  LU_HASH_DEBUG
+	//#define  LU_HASH_DEBUG
 
-	 /** Two types of hash buckets: linked list and red-black tree */
+		/** Two types of hash buckets: linked list and red-black tree */
 	typedef enum lu_hash_bucket_type_u {
 		LU_HASH_BUCKET_LIST,	// Bucket implemented as a linked list
 		LU_HASH_BUCKET_RBTREE,	// Bucket implemented as a red-black tree

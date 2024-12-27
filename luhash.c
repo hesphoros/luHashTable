@@ -158,12 +158,12 @@ void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
 		// Check if the bucket's linked list length exceeds the threshold
 		if (bucket->esize_bucket > LU_HASH_BUCKET_LIST_THRESHOLD) {
 #ifdef LU_HASH_DEBUG
-			//printf("Bucket size exceeded threshold. Converting to red-black tree...\n");
+			printf("Bucket[%d] size exceeded threshold. Converting to red-black tree...\n", index);
 #endif // LU_HASH_DEBUG
 			//Convert the internal structure of bucket from list to rb_tree
-			if (lu_convert_bucket_to_rbtree(bucket) != 0) {
+			if (lu_convert_bucket_to_rbtree(bucket) != 1) {
 #ifdef LU_HASH_DEBUG
-				printf("Error: Failed to convert bucket to red-black tree.\n");
+				printf("Error: Bucket[%d] failed to convert bucket to red-black tree.\n", index);
 #endif // LU_HASH_DEBUG
 			}
 		}
@@ -319,7 +319,7 @@ void lu_hash_table_destroy(lu_hash_table_t* table)
  * to use the red-black tree as its underlying data structure.
  *
  * @param bucket Pointer to the hash bucket to be converted.
- * @return 0 on success, -1 on failure (e.g., memory allocation error or invalid bucket).
+ * @return 1 on success, -1 on failure (e.g., memory allocation error or invalid bucket).
  */
 static int lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket)
 {
@@ -357,9 +357,9 @@ static int lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket)
 	bucket->type = LU_HASH_BUCKET_RBTREE;	// Update the bucket type
 	bucket->data.rb_tree = new_tree;		// Point to the new red-black tree
 #ifdef LU_HASH_DEBUG
-	//printf("Bucket[%p] successfully converted to red-black tree.\n", &bucket);
+	printf("Bucket[%p] successfully converted to red-black tree.\n", &bucket);
 #endif
-	return 0; // Indicate successful conversion
+	return 1; // Indicate successful conversion
 }
 
 /**
@@ -541,7 +541,10 @@ static lu_rb_tree_node_t* lu_hash_rb_tree_find(lu_rb_tree_t* tree, int key)
 			current = current->right;
 		}
 	}
+#ifdef LU_HASH_DEBUG
 	printf("Not find the element in the rb-tree\n");
+#endif // LU_HASH_DEBUG
+
 	return NULL;
 }
 
