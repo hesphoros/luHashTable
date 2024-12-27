@@ -38,6 +38,8 @@ static void lu_rb_tree_destroy_node(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 static void lu_hash_list_destory(lu_hash_bucket_t* bucket);
 static void lu_hash_rb_tree_destory(lu_hash_bucket_t* bucket);
 
+static int	lu_hash_function(int key, int table_size);
+
 /**
  * @brief Computes a hash value for a given key using the multiplication method.
  *
@@ -51,7 +53,7 @@ static void lu_hash_rb_tree_destory(lu_hash_bucket_t* bucket);
  * @param table_size The size of the hash table (number of buckets).
  * @return The computed hash value, ranging from 0 to table_size - 1.
  */
-int lu_hash_function(int key, int table_size)
+static int lu_hash_function(int key, int table_size)
 {
 	static const float golden_rate_reciprocal = 0.6180339887; // Reciprocal of the golden ratio
 
