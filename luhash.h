@@ -57,10 +57,9 @@ extern "C" {
 #define LU_MM_CALLOC(nmemb,size)	lu_mm_calloc(nmemb,size)
 #define LU_MM_FREE(ptr)				lu_mm_free(ptr)
 
-	 //debug
 #define  LU_HASH_DEBUG
 
- /** Two types of hash buckets: linked list and red-black tree */
+	 /** Two types of hash buckets: linked list and red-black tree */
 	typedef enum lu_hash_bucket_type_u {
 		LU_HASH_BUCKET_LIST,	// Bucket implemented as a linked list
 		LU_HASH_BUCKET_RBTREE,	// Bucket implemented as a red-black tree

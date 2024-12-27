@@ -1,9 +1,8 @@
 ﻿  luhash.c
-F:\codespace\hash\luhash\luhash.c(56,46): warning C4305: “初始化”: 从“double”到“const float”截断
-F:\codespace\hash\luhash\luhash.c(600,49): warning C4133: “函数”: 从“lu_hash_bucket_t *”到“lu_rb_tree_t *”的类型不兼容
   main.c
+F:\codespace\hash\luhash\luhash.c(56,46): warning C4305: “初始化”: 从“double”到“const float”截断
+F:\codespace\hash\luhash\luhash.c(605,49): warning C4133: “函数”: 从“lu_hash_bucket_t *”到“lu_rb_tree_t *”的类型不兼容
   正在生成代码...
-  LINK : 没有找到 F:\codespace\hash\luhash\x64\Debug\luhash.exe 或上一个增量链接没有生成它；正在执行完全链接
   luhash.vcxproj -> F:\codespace\hash\luhash\x64\Debug\luhash.exe
   'pwsh.exe' 不是内部或外部命令，也不是可运行的程序
   或批处理文件。
