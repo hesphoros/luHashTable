@@ -17,7 +17,7 @@
 static int			 lu_convert_bucket_to_rbtree(lu_hash_bucket_t* bucket);
 static lu_rb_tree_t* lu_rb_tree_init();
 static void			 lu_rb_tree_insert(lu_rb_tree_t* tree, int key, void* value);
-static void lu_hash_rb_tree_delete(lu_hash_bucket_t* bucket, int key);
+static void			 lu_hash_rb_tree_delete(lu_hash_bucket_t* bucket, int key);
 
 static void lu_hash_list_delete(lu_hash_bucket_t* bucket, int key);
 static lu_hash_bucket_node_t* lu_hash_list_find(lu_hash_bucket_t* bucket, int key);
@@ -38,7 +38,10 @@ static void lu_rb_tree_destroy_node(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
 static void lu_hash_list_destory(lu_hash_bucket_t* bucket);
 static void lu_hash_rb_tree_destory(lu_hash_bucket_t* bucket);
 
+static lu_rb_tree_node_t* lu_rb_tree_successor(lu_rb_tree_t* tree, lu_rb_tree_node_t* node);
 static int	lu_hash_function(int key, int table_size);
+
+static int resize_table(lu_hash_table_t** table);
 
 /**
  * @brief Computes a hash value for a given key using the multiplication method.
@@ -55,7 +58,7 @@ static int	lu_hash_function(int key, int table_size);
  */
 static int lu_hash_function(int key, int table_size)
 {
-	static const float golden_rate_reciprocal = 0.6180339887; // Reciprocal of the golden ratio
+	static const double golden_rate_reciprocal = 0.6180339887; // Reciprocal of the golden ratio
 
 	double temp = key * golden_rate_reciprocal;
 	double fractional_part = temp - (int)temp; // Extract fractional part
@@ -68,6 +71,122 @@ static int lu_hash_function(int key, int table_size)
 
 	// Fallback to standard modulo operation
 	return hash % table_size;
+}
+
+/**
+ * @brief Finds the successor of a given node in a red-black tree.
+ *
+ * The successor of a node is the node with the smallest key greater than the given node's key.
+ * If the node has a right child, the successor is the minimum node in the right subtree.
+ * Otherwise, the successor is one of the node's ancestors.
+ *
+ * @param tree The red-black tree.
+ * @param node The node whose successor is to be found.
+ * @return The successor node, or the tree's nil node if no successor exists.
+ */
+static lu_rb_tree_node_t* lu_rb_tree_successor(lu_rb_tree_t* tree, lu_rb_tree_node_t* node)
+{
+	if (node->right != tree->nil) {
+		return lu_rb_tree_minimum(tree, node->right);
+	}
+
+	lu_rb_tree_node_t* successor = node->parent;
+	while (successor != tree->nil && node == successor->right) {
+		node = successor;
+		successor = successor->parent;
+	}
+	return successor;
+}
+
+int resize_table(lu_hash_table_t** table)
+{
+	float load_factor = (float)(*table)->element_count / (*table)->table_size;
+
+	if (load_factor > LU_HASH_TABLE_MAX_LOAD_FACTOR) {
+		printf("Resize: The load_factor > LU_HASH_TABLE_MAX_LOAD_FACTOR\n");
+#ifdef LU_HASH_DEBUG
+		printf("Resize: The load_factor > LU_HASH_TABLE_MAX_LOAD_FACTOR\n");
+#endif // LU_HASH_DEBUG
+
+		int new_table_size = ((*table)->table_size) * 2;
+
+		lu_hash_table_t* new_table = lu_hash_table_init(new_table_size);
+		if (NULL == new_table) {
+#ifdef LU_HASH_DEBUG
+			printf("Error: Memory allocation failed for new table\n");
+#endif // LU_HASH_DEBUG
+			return -1;
+		}
+		// Rehash all elements from the old table to the new table
+		for (int i = 0; i < (*table)->table_size; i++) {
+			lu_hash_bucket_t* bucket = &(*table)->buckets[i];
+			if (bucket->type == LU_HASH_BUCKET_LIST) {
+				lu_hash_bucket_node_ptr_t node = bucket->data.list_head;
+				while (node) {
+					lu_hash_table_insert(new_table, node->key, node->value);
+					node = node->next;
+				}
+			}
+			else if (bucket->type == LU_HASH_BUCKET_RBTREE) {
+				// Rehash the red-black tree elements
+				lu_rb_tree_node_t* node = lu_rb_tree_minimum(bucket->data.rb_tree, bucket->data.rb_tree->root);
+				while (node != bucket->data.rb_tree->nil) {
+					lu_hash_table_insert(new_table, node->key, node->value);
+					node = lu_rb_tree_successor(bucket->data.rb_tree, node);
+				}
+			}
+		}
+
+		// Destroy the old table and update the pointer to the new table
+		lu_hash_table_destroy(*table);
+
+		*table = new_table;
+		return 1;
+	}
+
+	//	else if (load_factor < LU_HASH_TABLE_SHRINK_THRESHOLD && (*table)->table_size > 8)
+	//	{
+	//		printf("Resize: The load_factor < LU_HASH_TABLE_SHRINK_THRESHOLD\n");
+	//#ifdef LU_HASH_DEBUG
+	//		printf("Resize: The load_factor < LU_HASH_TABLE_SHRINK_THRESHOLD\n");
+	//#endif // LU_HASH_DEBUG
+	//
+	//		// Shrink the table if the load factor is below the threshold and the table size is greater
+	//		// than the minimum
+	//		int new_table_size = (*table)->table_size / 2;
+	//		lu_hash_table_t* new_table = lu_hash_table_init(new_table_size);
+	//		if (NULL == new_table) {
+	//#ifndef LU_HASH_DEBUG
+	//			printf("Error: Memory allocation failed for new table\n");
+	//#endif // !LU_HASH_DEBUG
+	//			return -1;
+	//		}
+	//		// Rehash all elements from the old table to the new table
+	//		for (int i = 0; i < (*table)->table_size; i++) {
+	//			lu_hash_bucket_t* bucket = &(*table)->buckets[i];
+	//			if (bucket->type == LU_HASH_BUCKET_LIST) {
+	//				lu_hash_bucket_node_ptr_t node = bucket->data.list_head;
+	//				while (node) {
+	//					lu_hash_table_insert(new_table, node->key, node->value);
+	//					node = node->next;
+	//				}
+	//			}
+	//			else if (bucket->type == LU_HASH_BUCKET_RBTREE) {
+	//				// Rehash the red-black tree elements
+	//				lu_rb_tree_node_t* node = lu_rb_tree_minimum(bucket->data.rb_tree, bucket->data.rb_tree->root);
+	//				while (node != bucket->data.rb_tree->nil) {
+	//					lu_hash_table_insert(new_table, node->key, node->value);
+	//					node = lu_rb_tree_successor(bucket->data.rb_tree, node);
+	//				}
+	//			}
+	//		}
+	//
+	//		// Update the pointer to the new table
+	//		lu_hash_table_destroy(*table);
+	//		*table = new_table;
+	//
+	//		return 1;
+	//	}
 }
 
 /**
@@ -121,6 +240,7 @@ lu_hash_table_t* lu_hash_table_init(int table_size)
 void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
 {
 	int index = lu_hash_function(key, table->table_size);
+
 	lu_hash_bucket_t* bucket = &table->buckets[index];
 	if (LU_HASH_BUCKET_LIST == bucket->type) {
 		lu_hash_bucket_node_ptr_t new_node = (lu_hash_bucket_node_ptr_t)LU_MM_MALLOC(sizeof(lu_hash_bucket_node_t));
@@ -154,6 +274,9 @@ void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value)
 		bucket->data.list_head = new_node;
 
 		// Increment the global element count and local bucket size
+		//table->element_count++;
+		//bucket->esize_bucket++;
+		//increase teh element_count
 		table->element_count++;
 		bucket->esize_bucket++;
 

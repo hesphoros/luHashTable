@@ -40,6 +40,7 @@ extern "C" {
 #define LU_ERROR_TREE_OR_NIL_NOT_INIT   0x10C    // Error code for RB-tree or tree->nil isn't initialized
 #define LU_HASH_TABLE_DEFAULT_SIZE		16		 // Default size for hash tables
 #define LU_HASH_TABLE_MAX_LOAD_FACTOR	0.75	 // Maximum allowed load factor
+#define LU_HASH_TABLE_SHRINK_THRESHOLD	0.25     // Shink
 
 	/**
 	* Threshold for converting a hash bucket from a linked list to a red-black tree.
@@ -129,7 +130,7 @@ extern "C" {
 	typedef struct lu_hash_table_s {
 		lu_hash_bucket_t* buckets;
 		int				  table_size;
-		int				  element_count; // Current number of elements in the hash table
+		size_t		      element_count; // Current number of elements in the hash table
 	}lu_hash_table_t;
 
 	static inline void* lu_mm_malloc(size_t size) {

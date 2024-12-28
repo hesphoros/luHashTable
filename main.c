@@ -5,7 +5,7 @@
 #include "luhash.h"
 #include <Windows.h>
 
-//#define LU_HASH_DEBUG
+#define LU_HASH_DEBUG
 
 // 定义包含姓名、ID号、性别等信息的结构体
 typedef struct {
@@ -80,7 +80,23 @@ void test_hash() {
 		add_person_to_db(&db, &people[i]);
 	}
 
-	// 查找指定 ID 的 Person 数据
+	//// 查找指定 ID 的 Person 数据
+	//for (int i = 1001; i <= 1100; ++i) {
+	//	Person* found_person = (Person*)find_person_by_id(&db, i);
+	//	if (found_person) {
+	//		printf("Found person: Name: %s, ID: %d, Gender: %c\n", found_person->name, found_person->id, found_person->gender);
+	//	}
+	//	else {
+	//		printf("Person with ID %d not found\n", i);
+	//	}
+	//}
+	printf("Statr to del person in hash_table\n");
+	//// 删除指定 ID 的 Person 数据
+	//for (int i = 1001; i <= 1100; ++i) {
+	//	lu_hash_table_delete(db.hash_table, i);
+	//}
+	lu_hash_table_delete(db.hash_table, 1004);
+	lu_hash_table_delete(db.hash_table, 1005);
 	for (int i = 1001; i <= 1100; ++i) {
 		Person* found_person = (Person*)find_person_by_id(&db, i);
 		if (found_person) {
@@ -90,11 +106,7 @@ void test_hash() {
 			printf("Person with ID %d not found\n", i);
 		}
 	}
-	printf("Statr to del person in hash_table\n");
-	// 删除指定 ID 的 Person 数据
-	for (int i = 1001; i <= 1100; ++i) {
-		lu_hash_table_delete(db.hash_table, i);
-	}
+
 	printf("Delete elements finished\n");
 	int found_count = 0;
 	for (int i = 1001; i <= 1100; ++i) {
