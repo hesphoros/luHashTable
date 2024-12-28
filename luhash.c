@@ -607,7 +607,7 @@ static void lu_hash_list_delete(lu_hash_bucket_t* bucket, int key)
 static void lu_hash_rb_tree_delete(lu_hash_bucket_t* bucket, int key)
 {
 	// Find the node with the given key in the red-black tree
-	lu_rb_tree_node_t* node = lu_hash_rb_tree_find(bucket, key);
+	lu_rb_tree_node_t* node = lu_hash_rb_tree_find(bucket->data.rb_tree, key);
 	if (node == NULL) {
 		return; // Key not found, no action needed
 	}

@@ -90,7 +90,20 @@ void test_hash() {
 			printf("Person with ID %d not found\n", i);
 		}
 	}
-
+	printf("Statr to del person in hash_table\n");
+	// 删除指定 ID 的 Person 数据
+	for (int i = 1001; i <= 1100; ++i) {
+		lu_hash_table_delete(db.hash_table, i);
+	}
+	printf("Delete elements finished\n");
+	int found_count = 0;
+	for (int i = 1001; i <= 1100; ++i) {
+		Person* found_person = (Person*)find_person_by_id(&db, i);
+		if (found_person) {
+			found_count++;
+		}
+	}
+	printf("Find person after del operation is : %d", found_count);
 	// 销毁哈希表数据库，释放内存
 	destroy_person_db(&db);
 }
