@@ -121,7 +121,7 @@ void test_hash() {
 }
 
 int main() {
-	system("chcp 65001");
+	//system("chcp 65001");
 
 	test_hash();
 	return 0;
