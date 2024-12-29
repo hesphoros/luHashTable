@@ -1264,7 +1264,7 @@ static void lu_hash_table_resize(lu_hash_table_t* table)
 		}
 		else if (old_bucket->type == LU_HASH_BUCKET_RBTREE) {
 			// Handle red-black tree bucket rehashing
-			// This part can be implemented similarly by traversing the tree and rehashing each node
+
 			lu_rb_tree_rehash(old_bucket->data.rb_tree, old_bucket->data.rb_tree->root, new_buckets, new_table_size, old_bucket->data.rb_tree->nil);
 		}
 	}
