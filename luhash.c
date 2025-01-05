@@ -114,7 +114,7 @@ static lu_rb_tree_node_t* lu_rb_tree_successor(lu_rb_tree_t* tree, lu_rb_tree_no
  * Usage example:
  *     lu_hash_table_t* hash_table = lu_hash_table_init(16); // Creates a hash table with 16 buckets.
  */
-lu_hash_table_t* lu_hash_table_init(int table_size)
+lu_hash_table_t* lu_hash_table_init(size_t table_size)
 {
 	if (table_size <= 0) {
 		table_size = LU_HASH_TABLE_DEFAULT_SIZE;

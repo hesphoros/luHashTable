@@ -71,7 +71,7 @@ extern "C" {
 	 */
 	typedef struct lu_hash_bucket_node_s {
 		struct lu_hash_bucket_node_s* next; // Pointer to the next node in the bucket
-		int key;                            // Key of the node
+		int		key;                        // Key of the node
 		void* value;                        // Pointer to the value associated with the key
 	} lu_hash_bucket_node_t;
 
@@ -166,7 +166,7 @@ extern "C" {
 
 	/**Function definition*/
 	void* lu_hash_table_find(lu_hash_table_t* table, int key);
-	lu_hash_table_t* lu_hash_table_init(int table_size);
+	lu_hash_table_t* lu_hash_table_init(size_t table_size);
 	void lu_hash_table_insert(lu_hash_table_t* table, int key, void* value);
 	void lu_hash_table_delete(lu_hash_table_t* table, int key);
 	void lu_hash_table_destroy(lu_hash_table_t* table);
