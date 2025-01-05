@@ -90,7 +90,7 @@ void test_hash() {
 	//		printf("Person with ID %d not found\n", i);
 	//	}
 	//}
-	printf("Statr to del person in hash_table\n");
+	printf("Statr to delete some elements (person) in hash_table\n");
 	//// 删除指定 ID 的 Person 数据
 	//for (int i = 1001; i <= 1100; ++i) {
 	//	lu_hash_table_delete(db.hash_table, i);
