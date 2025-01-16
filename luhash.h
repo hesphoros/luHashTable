@@ -11,7 +11,7 @@
  *
  * @author [hesphoros]
  * @contact [hesphoros@gmail.com]
- * @date 2024-12-25
+ * @date 2025-1-15
  *
  * This file includes the following major components:
  * - Error codes for hash table operations, including memory allocation failures.
@@ -129,7 +129,7 @@ extern "C" {
 	*/
 	typedef struct lu_hash_table_s {
 		lu_hash_bucket_t* buckets;
-		int				  table_size;
+		size_t				  table_size;
 		size_t		      element_count; // Current number of elements in the hash table
 	}lu_hash_table_t;
 

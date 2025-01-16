@@ -1,7 +1,5 @@
 ﻿  luhash.c
+D:\codespace\luHashTable\luhash.c(125,22): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
   main.c
-F:\codespace\hash\luHashTable\luhash.c(125,22): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
   正在生成代码...
-  luhash.vcxproj -> F:\codespace\hash\luHashTable\x64\Debug\luhash.exe
-  'pwsh.exe' 不是内部或外部命令，也不是可运行的程序
-  或批处理文件。
+  luhash.vcxproj -> D:\codespace\luHashTable\x64\Debug\luhash.exe
